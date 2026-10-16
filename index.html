@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>放射性 / 稀土元素分离方案推荐模型</title>
+<style>
+:root{
+  --bg:#f5f6f8; --bg2:#ffffff; --panel:#ffffff; --panel2:#f3f5f8;
+  --line:#e4e8ee; --line2:#cfd6df;
+  --txt:#212a35; --txt2:#5a6572; --txt3:#8b95a3;
+  --acc:#0f766e; --acc2:#1d6fb8; --acc3:#5b54b8;
+  --red:#b03a2e; --org:#a86a0a; --yel:#8a730a; --grn:#1e7d4f;
+  --rad:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:"Inter","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  font-size:14px; line-height:1.65; min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:28px 22px 80px}
+header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border-radius:12px;flex:none;
+  background:var(--acc); display:grid;place-items:center;
+  font-size:19px;font-weight:700;color:#ffffff}
+h1{font-size:21px;font-weight:650;letter-spacing:.2px;color:var(--txt)}
+.sub{color:var(--txt3);font-size:12.5px;margin-top:3px}
+.tagrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.tag{font-size:11.5px;padding:4px 11px;border-radius:999px;border:1px solid var(--line2);
+  color:var(--txt2);background:var(--bg2)}
+.tag.on{border-color:var(--acc);color:var(--acc);background:rgba(15,118,110,.06)}
+
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--rad);padding:18px}
+.card+.card{margin-top:18px}
+.card h2{font-size:13.5px;font-weight:600;letter-spacing:.4px;margin-bottom:14px;
+  display:flex;align-items:center;gap:9px;color:var(--txt)}
+.card h2::before{content:"";width:3px;height:14px;border-radius:2px;
+  background:var(--acc);flex:none}
+.hint{font-size:11.5px;color:var(--txt3);margin:-8px 0 12px}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--line2);
+  background:var(--bg2);color:var(--txt2);cursor:pointer;transition:.15s;user-select:none}
+.chip:hover{border-color:var(--acc);color:var(--acc)}
+.chip.sel{background:rgba(15,118,110,.08);border-color:var(--acc);color:var(--acc);font-weight:550}
+.chip.rad{border-left:2px solid var(--red)}
+.chip.rad.sel{background:rgba(176,58,46,.06);border-color:var(--red);color:var(--red)}
+
+.slot{margin-bottom:10px}
+.slot .lbl{font-size:11.5px;color:var(--txt3);margin-bottom:5px;display:flex;
+  justify-content:space-between;align-items:center}
+.slot select,.slot input[type=number]{width:100%;padding:9px 11px;border-radius:8px;
+  border:1px solid var(--line2);background:var(--bg2);color:var(--txt);font-size:13px;
+  font-family:inherit;outline:none;transition:.15s}
+.slot select:focus,.slot input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(15,118,110,.10)}
+.row{display:grid;grid-template-columns:1fr 104px;gap:8px}
+
+.slider{margin-bottom:13px}
+.slider .top{display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-bottom:5px}
+.slider .top b{color:var(--acc);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;
+  background:var(--line2);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+  border-radius:50%;background:var(--acc);cursor:pointer}
+details summary{cursor:pointer;font-size:12.5px;color:var(--txt2);padding:7px 0;
+  list-style:none;display:flex;align-items:center;gap:7px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸";color:var(--acc);transition:.2s;display:inline-block}
+details[open] summary::before{transform:rotate(90deg)}
+
+button.go{width:100%;padding:13px;border-radius:9px;border:none;cursor:pointer;
+  font-size:14px;font-weight:600;font-family:inherit;letter-spacing:.3px;
+  background:var(--acc);color:#ffffff;transition:.18s;margin-top:4px}
+button.go:hover{filter:brightness(1.12)}
+button.go:active{filter:brightness(.95)}
+button.ghost{padding:8px 15px;border-radius:8px;border:1px solid var(--line2);
+  background:var(--bg2);color:var(--txt2);cursor:pointer;font-size:12.5px;font-family:inherit}
+button.ghost:hover{border-color:var(--acc);color:var(--acc)}
+
+#out{display:none}
+#out.on{display:block}
+.plan{border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;margin-bottom:18px;
+  background:var(--panel)}
+.plan.best{border-color:var(--acc);box-shadow:0 1px 4px rgba(15,118,110,.08)}
+.plan .head{padding:16px 18px;display:flex;justify-content:space-between;
+  align-items:flex-start;gap:14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.plan.best .head{background:rgba(15,118,110,.05)}
+.plan .rk{font-size:10.5px;letter-spacing:1.4px;color:var(--acc);font-weight:650;margin-bottom:5px}
+.plan.alt .rk{color:var(--txt3)}
+.plan .nm{font-size:16.5px;font-weight:620;color:var(--txt)}
+.plan .fam{font-size:12px;color:var(--txt3);margin-top:4px}
+.score{text-align:right;flex:none}
+.score .n{font-size:29px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;
+  color:var(--acc)}
+.score .u{font-size:11px;color:var(--txt3);margin-top:3px}
+.body{padding:16px 18px}
+
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:9px;margin-bottom:16px}
+.kpi .k{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.kpi .k .t{font-size:10.5px;color:var(--txt3);margin-bottom:3px}
+.kpi .k .v{font-size:15.5px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--txt)}
+.kpi .k .v.sm{font-size:13px}
+.kpi .k .v .u{font-size:10.5px;font-weight:400;color:var(--txt3)}
+
+.dims{margin-bottom:15px}
+.dim{display:grid;grid-template-columns:82px 1fr 40px;gap:10px;align-items:center;
+  margin-bottom:7px;font-size:12px}
+.dim .dn{color:var(--txt2)}
+.dim .bar{display:block;height:7px;border-radius:4px;background:#e8ecf1;overflow:hidden}
+.dim .fill{display:block;height:100%;border-radius:4px;transition:width .5s cubic-bezier(.3,1,.4,1)}
+.dim .dv{text-align:right;color:var(--txt);font-variant-numeric:tabular-nums;font-size:11.5px}
+
+.sec{margin-top:15px}
+.sec .st{font-size:12px;font-weight:600;color:var(--txt);margin-bottom:9px;
+  display:flex;align-items:center;gap:7px}
+.sec .st .dot{width:5px;height:5px;border-radius:50%;background:var(--acc);flex:none}
+ul.rl{list-style:none;font-size:12.5px;color:var(--txt2)}
+ul.rl li{padding:5px 0 5px 15px;position:relative;border-bottom:1px solid rgba(0,0,0,.05)}
+ul.rl li:last-child{border-bottom:none}
+ul.rl li::before{content:"";position:absolute;left:2px;top:12px;width:4px;height:4px;
+  border-radius:50%;background:var(--acc);opacity:.65}
+
+.steps{position:relative;padding-left:20px}
+.steps::before{content:"";position:absolute;left:5px;top:6px;bottom:8px;width:1px;background:var(--line2)}
+.step{position:relative;padding:0 0 12px 0;font-size:12.5px;color:var(--txt2)}
+.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:-18px;top:6px;width:7px;height:7px;border-radius:50%;
+  background:var(--bg2);border:1.5px solid var(--acc2)}
+.step.pre::before{border-color:var(--org);background:rgba(168,106,10,.15)}
+.step.post::before{border-color:var(--txt3);background:rgba(139,149,163,.18)}
+.step .sl{font-size:10px;letter-spacing:1px;color:var(--txt3);font-weight:600;margin-bottom:2px}
+.step.pre .sl{color:var(--org)}
+.step.post .sl{color:var(--txt3)}
+
+.hz{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:9px;
+  border:1px solid var(--line);margin-bottom:14px;flex-wrap:wrap}
+.hz.H{background:rgba(176,58,46,.05);border-color:rgba(176,58,46,.30)}
+.hz.M{background:rgba(168,106,10,.05);border-color:rgba(168,106,10,.28)}
+.hz.L{background:rgba(30,125,79,.05);border-color:rgba(30,125,79,.25)}
+.hz .lvl{font-size:22px;font-weight:700;flex:none}
+.hz.H .lvl{color:var(--red)} .hz.M .lvl{color:var(--org)} .hz.L .lvl{color:var(--grn)}
+.hz .txt{font-size:12.5px;color:var(--txt2)}
+.hz .txt b{color:var(--txt)}
+
+.hitem{display:flex;gap:11px;padding:11px 13px;border-radius:8px;background:var(--panel2);
+  border:1px solid var(--line);margin-bottom:8px;align-items:flex-start}
+.hitem.high{border-left:3px solid var(--red)}
+.hitem.medium{border-left:3px solid var(--org)}
+.hitem.low{border-left:3px solid var(--grn)}
+.badge{font-size:10px;padding:2.5px 7px;border-radius:5px;font-weight:600;flex:none;
+  letter-spacing:.4px;white-space:nowrap;margin-top:1px}
+.badge.high{background:rgba(176,58,46,.10);color:#96281b}
+.badge.medium{background:rgba(168,106,10,.10);color:#8a5808}
+.badge.low{background:rgba(30,125,79,.10);color:#196b43}
+.badge.cat{background:rgba(29,111,184,.08);color:#1a5f9e}
+.hitem .ht{font-size:12px;color:var(--txt3);margin-bottom:2px}
+.hitem .hm{font-size:12.5px;color:var(--txt2)}
+
+.rc{padding:14px 16px;border-radius:9px;border:1px solid var(--line);background:var(--panel2)}
+.rc .st{font-size:15px;font-weight:650;margin-bottom:7px}
+.rc.ok{border-color:rgba(30,125,79,.35)} .rc.ok .st{color:var(--grn)}
+.rc.mid{border-color:rgba(168,106,10,.35)} .rc.mid .st{color:var(--org)}
+.rc.bad{border-color:rgba(176,58,46,.35)} .rc.bad .st{color:var(--red)}
+
+table.src{width:100%;border-collapse:collapse;font-size:12px}
+table.src th{text-align:left;color:var(--txt3);font-weight:600;padding:8px 10px;
+  border-bottom:1px solid var(--line2);font-size:11px;letter-spacing:.4px}
+table.src td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--txt2);vertical-align:top}
+table.src tr:last-child td{border-bottom:none}
+table.src a{color:var(--acc2);text-decoration:none;word-break:break-all}
+table.src a:hover{text-decoration:underline}
+table.src td:first-child{color:var(--txt);font-weight:550;width:26%}
+table.src.cb td:first-child{width:auto;font-weight:550}
+table.src.cb tr.baserow td{background:rgba(176,58,46,.04);color:var(--txt)}
+table.src.cb tr.baserow td:first-child{color:var(--red);font-weight:650}
+
+.cbkpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px}
+.chart{margin-top:16px;padding:14px 14px 8px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:8px}
+.crow{display:grid;grid-template-columns:minmax(90px,180px) 1fr minmax(84px,auto);
+  gap:10px;align-items:center;margin-bottom:9px;font-size:12px}
+.clbl{color:var(--txt2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctrack{height:16px;background:#e8ecf1;border-radius:4px;overflow:hidden}
+.cbar{height:100%;border-radius:4px;background:var(--acc2);min-width:2px}
+.cbar.cbase{background:var(--red)}
+.cbar.cbest{background:var(--grn)}
+.cval{font-variant-numeric:tabular-nums;color:var(--txt);font-size:11.5px;white-space:nowrap}
+.cred{color:var(--grn);font-weight:600}
+
+.filterbox{max-height:0;overflow:hidden;transition:max-height .3s}
+.filterbox.on{max-height:400px}
+input[type=text]{width:100%;padding:8px 11px;border-radius:8px;border:1px solid var(--line2);
+  background:var(--bg2);color:var(--txt);font-size:12.5px;font-family:inherit;outline:none;margin-bottom:9px}
+input[type=text]:focus{border-color:var(--acc)}
+.empty{text-align:center;padding:60px 20px;color:var(--txt3)}
+.empty .big{font-size:40px;margin-bottom:14px;opacity:.35}
+footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:11.5px;color:var(--txt3);text-align:center;line-height:1.8}
+.warnbar{font-size:11.5px;color:#8a5808;background:rgba(168,106,10,.06);
+  border:1px solid rgba(168,106,10,.25);border-radius:8px;padding:9px 12px;margin-bottom:14px}
+
+/* ===== 输入页宽布局 ===== */
+.ingrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start;margin-bottom:20px}
+@media(max-width:900px){.ingrid{grid-template-columns:1fr}}
+.ingrid .card{margin-top:0}
+.ingrid .card:nth-of-type(2){grid-row:span 2}
+#weights{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 20px}
+button.go{max-width:340px;display:block;margin:0 auto}
+
+/* ===== 结果页 ===== */
+#view-result{display:none}
+body.result #view-input{display:none}
+body.result #view-result{display:block}
+.rhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px}
+.rhead-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pgind{font-size:12px;color:var(--txt3);font-variant-numeric:tabular-nums}
+
+.pager{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);
+  padding:10px 14px;margin-bottom:18px;position:sticky;top:0;z-index:20}
+.pager-bottom{position:static;margin-top:18px;margin-bottom:0}
+.pbtn{padding:8px 16px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);
+  color:var(--txt2);cursor:pointer;font-size:12.5px;font-family:inherit;white-space:nowrap}
+.pbtn:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.pbtn:disabled{opacity:.4;cursor:not-allowed}
+.plabel{display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;flex:1;min-width:0}
+.plabel b{font-size:13px;font-weight:600;color:var(--txt)}
+.plabel span{font-size:11px;color:var(--txt3)}
+
+.page{display:none}
+body.result .page.on{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+.pgfoot{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line);
+  font-size:10.5px;color:#9aa4b0;line-height:1.75}
+.pgfoot .ft{color:#aab3bd;font-weight:600;letter-spacing:.3px;margin-bottom:3px}
+.pgfoot .fi{margin-bottom:2px}
+.pgfoot a{color:#8ba0b8;text-decoration:none;word-break:break-all}
+
+/* ===== 立体柱状图 ===== */
+.chart3d{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px 16px 10px}
+.chart3d svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:6px;
+  font-size:11.5px;color:var(--txt2)}
+.legend .li{display:flex;align-items:center;gap:6px}
+.legend .sw{width:18px;height:11px;border-radius:2px;display:inline-block}
+.bar-g .front{transition:opacity .12s}
+.bar-g:hover .front{opacity:.82}
+.bar-g:hover .bval{font-weight:700}
+
+/* ===== 最佳方案页：分区块卡片 ===== */
+.plan .hero{padding:26px 24px 22px;border-bottom:1px solid var(--line);text-align:center}
+.plan.best .hero{background:#fbfcfd}
+.hero-tag{font-size:11px;letter-spacing:1.6px;color:var(--acc);font-weight:650;margin-bottom:10px}
+.plan.alt .hero-tag{color:var(--txt3)}
+.hero-name{font-size:34px;font-weight:700;line-height:1.24;letter-spacing:.3px;color:var(--txt);margin:0}
+@media(max-width:700px){.hero-name{font-size:26px}}
+.hero-meta{font-size:12px;color:var(--txt3);margin-top:10px}
+.hero-meta b{color:var(--acc);font-size:14px;font-variant-numeric:tabular-nums}
+
+.s3box{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);
+  padding:18px 20px;margin:16px 0}
+.plan .s3box:last-child{margin-bottom:0}
+.plan>.s3box:first-of-type{margin-top:16px}
+.s3title{font-size:14px;font-weight:650;color:var(--txt);margin-bottom:14px;
+  display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.s3title::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--acc);
+  flex:none;align-self:center}
+.s3sub{font-size:11.5px;font-weight:400;color:var(--txt3)}
+
+.s3pre{font-size:12px;color:#8a5808;background:rgba(168,106,10,.05);
+  border:1px solid rgba(168,106,10,.22);border-radius:7px;padding:9px 12px;margin-bottom:14px;line-height:1.7}
+.s3pre i{font-style:normal;font-weight:650;margin-right:6px}
+
+.s3steps{display:flex;flex-direction:column;gap:12px}
+.s3step{display:flex;gap:14px;align-items:flex-start}
+.s3no{width:30px;height:30px;border-radius:50%;flex:none;background:var(--acc);color:#fff;
+  font-size:13.5px;font-weight:700;display:grid;place-items:center;font-variant-numeric:tabular-nums;
+  margin-top:1px}
+.s3body{flex:1;min-width:0;border-bottom:1px dashed var(--line);padding-bottom:12px}
+.s3step:last-child .s3body{border-bottom:none;padding-bottom:0}
+.s3nm{font-size:14px;font-weight:650;color:var(--txt);margin-bottom:4px;
+  display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.s3tm{font-size:11.5px;font-weight:600;color:var(--acc);white-space:nowrap;
+  background:rgba(15,118,110,.07);border-radius:5px;padding:2px 9px;flex:none}
+.s3act{font-size:13px;color:var(--txt2);line-height:1.72}
+.s3io{margin-top:9px;border-left:2px solid var(--line2);padding-left:11px;
+  display:flex;flex-direction:column;gap:5px}
+.s3io-r{display:grid;grid-template-columns:64px 1fr;gap:9px;font-size:12px;line-height:1.65}
+.s3io-r i{font-style:normal;color:#a3acb8;font-size:10.5px;
+  background:var(--panel2);border-radius:4px;padding:1px 6px;height:fit-content;text-align:center}
+.s3io-r b{color:var(--acc);font-weight:600}
+.s3io-r span{color:var(--txt2)}
+
+.s3basis{font-size:12.5px;color:var(--txt2);background:var(--panel2);
+  border:1px solid var(--line);border-radius:7px;padding:10px 13px;margin-bottom:14px;line-height:1.7}
+.s3basis b{color:var(--acc);font-size:14px;font-variant-numeric:tabular-nums}
+
+/* ===== 风险折叠 ===== */
+.hazfold{margin-top:6px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
+.hazfold summary{font-size:12.5px;color:var(--txt2);padding:12px 15px;
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+.hazfold summary::-webkit-details-marker{display:none}
+.hazfold summary::before{content:"▸";color:var(--acc);transition:.2s;display:inline-block}
+.hazfold[open] summary::before{transform:rotate(90deg)}
+.hazfold-body{padding:0 15px 14px}
+.hazfold-body .hitem:last-child{margin-bottom:0}
+.hazfold .hitem{background:var(--panel);border-left-width:3px}
+
+.s3kpi{grid-template-columns:repeat(auto-fit,minmax(126px,1fr));margin-bottom:18px}
+.s3kpi .k .v{font-size:20px}
+.s3dims{margin-bottom:0}
+
+.s3para{font-size:13px;color:var(--txt2);line-height:1.85;margin:0}
+.s3ref{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);
+  font-size:11px;color:#9aa4b0;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="view-input">
+  <header>
+    <div class="brand">
+      <div class="logo">Rn</div>
+      <div>
+        <h1>放射性 / 稀土元素分离方案推荐模型</h1>
+        <div class="sub">知识驱动 · 分配比物理引擎 · 六维加权多准则决策 — 全离线运行</div>
+      </div>
+    </div>
+    <div class="tagrow">
+      <span class="tag on">16 种分离工艺</span>
+      <span class="tag on">21 种放射性/稀土元素</span>
+      <span class="tag on">14 种溶剂</span>
+      <span class="tag on">9 类杂质干扰模型</span>
+      <span class="tag on">数据溯源至 NEA-TDB / IUPAC / NIST / CSD</span>
+    </div>
+  </header>
+
+  <div class="ingrid">
+    <div class="card">
+      <h2>体系配置</h2>
+      <div class="hint">选择溶剂并填写体积（最多 3 种）</div>
+      <div class="slot">
+        <div class="lbl"><span>溶剂 1</span></div>
+        <div class="row"><select id="s0"></select><input type="number" id="v0" value="500" min="1" step="10"></div>
+      </div>
+      <div class="slot">
+        <div class="lbl"><span>溶剂 2（可选）</span></div>
+        <div class="row"><select id="s1"></select><input type="number" id="v1" value="300" min="0" step="10"></div>
+      </div>
+      <div class="slot">
+        <div class="lbl"><span>溶剂 3（可选）</span></div>
+        <div class="row"><select id="s2"></select><input type="number" id="v2" value="200" min="0" step="10"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>放射性 / 稀土元素（离子形态）</h2>
+      <div class="hint" style="display:flex;justify-content:space-between">
+        <span>可多选 · 红标为放射性核素</span><span id="pickinfo" style="color:var(--acc)"></span></div>
+      <input type="text" id="eq" placeholder="筛选元素，如 U / 铀 / 稀土">
+      <div id="elems"></div>
+    </div>
+
+    <div class="card">
+      <h2>杂质</h2>
+      <div class="hint">可多选 · 影响工艺可行性与危险等级</div>
+      <div id="imps" class="chips"></div>
+    </div>
+
+    <div class="card">
+      <h2>评估权重（高级）</h2>
+      <div class="hint">六维权重决定方案排序，可按时按需调整</div>
+      <div id="weights"></div>
+      <button class="ghost" id="resetw">恢复默认权重</button>
+    </div>
+  </div>
+
+  <button class="go" id="run">生成分离方案</button>
+
+  <footer>
+    本工具为方案预筛选辅助工具，输出基于公开数据库与文献的方法学建模，<b>不替代</b>实验室小试验证、辐射安全评估与合规审批。<br>
+    所有放射性操作须在许可设施内、由持证人员按辐射防护最优化原则执行。
+  </footer>
+</div>
+
+<div id="view-result">
+  <header class="rhead">
+    <div class="brand">
+      <div class="logo">Rn</div>
+      <div>
+        <h1>分离方案分析报告</h1>
+        <div class="sub" id="rsub"></div>
+      </div>
+    </div>
+    <div class="rhead-actions">
+      <button class="ghost" id="back">← 返回修改参数</button>
+      <span class="pgind" id="pgind"></span>
+    </div>
+  </header>
+
+  <div class="pager">
+    <button class="pbtn" id="prev">← 上一页</button>
+    <div class="plabel"><b id="ptitle"></b><span id="psub"></span></div>
+    <button class="pbtn" id="next">下一页 →</button>
+  </div>
+
+  <div id="pages"></div>
+
+  <div class="pager pager-bottom">
+    <button class="pbtn" id="prev2">← 上一页</button>
+    <span class="plabel"><span id="pnum2"></span></span>
+    <button class="pbtn" id="next2">下一页 →</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const KB = {"ELEMENTS": {"U": {"name": "铀", "z": 92, "class": "actinide", "charge": 6, "radius6": 0.73, "radius8": 0.89, "ox": [3, 4, 5, 6], "common_ox": 6, "pearson": "hard", "radioactive": true, "alpha": 4.27, "gamma": 0.18572, "d_pref": "anion", "need_shield_mm": 5.0, "critical_mass_kg": 52.0, "note": "UO2(2+) 线型铀酰，硬酸，强亲氧"}, "Th": {"name": "钍", "z": 90, "class": "actinide", "charge": 4, "radius6": 0.94, "radius8": 1.05, "ox": [4], "common_ox": 4, "pearson": "hard", "radioactive": true, "alpha": 4.01, "gamma": 0.23863, "d_pref": "cation", "need_shield_mm": 2.0, "critical_mass_kg": null, "note": "Th(IV) 四价硬酸，极易水解与沉淀"}, "Pu": {"name": "钚", "z": 94, "class": "actinide", "charge": 4, "radius6": 0.86, "radius8": 0.96, "ox": [3, 4, 5, 6], "common_ox": 4, "pearson": "hard", "radioactive": true, "alpha": 5.16, "gamma": 0.1293, "d_pref": "cation", "need_shield_mm": 10.0, "critical_mass_kg": 10.0, "note": "多价态共存，涉及歧化，临界风险最高"}, "Np": {"name": "镎", "z": 93, "class": "actinide", "charge": 4, "radius6": 0.87, "radius8": 0.98, "ox": [3, 4, 5, 6, 7], "common_ox": 5, "pearson": "hard", "radioactive": true, "alpha": 4.79, "gamma": 0.0865, "d_pref": "cation", "need_shield_mm": 6.0, "critical_mass_kg": 60.0, "note": "Np(V) 为 NpO2(+) 弱络合阳离子"}, "Am": {"name": "镅", "z": 95, "class": "actinide", "charge": 3, "radius6": 0.98, "radius8": 1.09, "ox": [3, 4, 5, 6], "common_ox": 3, "pearson": "hard", "radioactive": true, "alpha": 5.49, "gamma": 0.05954, "d_pref": "cation", "need_shield_mm": 3.0, "critical_mass_kg": 75.0, "note": "An(III) 三价，与 Ln(III) 化学相似度极高"}, "Cm": {"name": "锔", "z": 96, "class": "actinide", "charge": 3, "radius6": 0.97, "radius8": 1.09, "ox": [3, 4], "common_ox": 3, "pearson": "hard", "radioactive": true, "alpha": 5.9, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 3.0, "critical_mass_kg": 80.0, "note": "Am(III)/Cm(III) 为最难分离对之一"}, "Sr": {"name": "锶-90", "z": 38, "class": "fission", "charge": 2, "radius6": 1.18, "radius8": 1.26, "ox": [2], "common_ox": 2, "pearson": "hard", "radioactive": true, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 2.0, "critical_mass_kg": null, "note": "Sr-90 纯 β 发射，子体 Y-90 亦为 β，需有机玻璃屏蔽"}, "Cs": {"name": "铯-137", "z": 55, "class": "fission", "charge": 1, "radius6": 1.67, "radius8": 1.74, "ox": [1], "common_ox": 1, "pearson": "hard", "radioactive": true, "alpha": 0.0, "gamma": 0.6617, "d_pref": "cation", "need_shield_mm": 20.0, "critical_mass_kg": null, "note": "Cs-137 强 γ 源，需铅屏蔽；碱金属弱络合"}, "Co": {"name": "钴-60", "z": 27, "class": "fission", "charge": 2, "radius6": 0.745, "radius8": 0.9, "ox": [2, 3], "common_ox": 2, "pearson": "borderline", "radioactive": true, "alpha": 0.0, "gamma": 1.3325, "d_pref": "cation", "need_shield_mm": 30.0, "critical_mass_kg": null, "note": "Co-60 γ 能量最高(1.17+1.33 MeV)，屏蔽需求最大"}, "Tc": {"name": "锝-99", "z": 43, "class": "fission", "charge": 7, "radius6": 0.56, "radius8": 0.7, "ox": [4, 7], "common_ox": 7, "pearson": "borderline", "radioactive": true, "alpha": 0.0, "gamma": 0.1405, "d_pref": "anion", "need_shield_mm": 3.0, "critical_mass_kg": 0.78, "note": "TcO4(-) 高锝酸根，阴离子交换与胺类萃取靶向"}, "La": {"name": "镧", "z": 57, "class": "lanthanide", "charge": 3, "radius6": 1.032, "radius8": 1.16, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "轻稀土起点，离子半径最大"}, "Ce": {"name": "铈", "z": 58, "class": "lanthanide", "charge": 3, "radius6": 1.01, "radius8": 1.143, "ox": [3, 4], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "Ce(IV) 可氧化分离，但常引入氧化态混杂"}, "Nd": {"name": "钕", "z": 60, "class": "lanthanide", "charge": 3, "radius6": 0.983, "radius8": 1.109, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "Nd/Sm 为稀土中较难分离对"}, "Sm": {"name": "钐", "z": 62, "class": "lanthanide", "charge": 3, "radius6": 0.958, "radius8": 1.079, "ox": [2, 3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "Sm 可被 Zn/Hg 还原至 Sm(II) 实现特殊分离"}, "Eu": {"name": "铕", "z": 63, "class": "lanthanide", "charge": 3, "radius6": 0.947, "radius8": 1.066, "ox": [2, 3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "Eu(III) 常作为 Ln 代表用于 TALSPEAK 评价"}, "Gd": {"name": "钆", "z": 64, "class": "lanthanide", "charge": 3, "radius6": 0.938, "radius8": 1.053, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "Gd 巨中子俘获截面，易受辐照影响"}, "Tb": {"name": "铽", "z": 65, "class": "lanthanide", "charge": 3, "radius6": 0.923, "radius8": 1.04, "ox": [3, 4], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "Tb(IV) 可氧化，属可调价稀土"}, "Dy": {"name": "镝", "z": 66, "class": "lanthanide", "charge": 3, "radius6": 0.912, "radius8": 1.027, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "重稀土，HDEHP 分配比高，易富集于有机相"}, "Y": {"name": "钇", "z": 39, "class": "lanthanide", "charge": 3, "radius6": 0.9, "radius8": 1.019, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "离子半径介于 Ho/Er 之间，常伴重稀土"}, "Lu": {"name": "镥", "z": 71, "class": "lanthanide", "charge": 3, "radius6": 0.861, "radius8": 0.977, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "半径最小，镧系收缩末端，分离因子最大"}, "Sc": {"name": "钪", "z": 21, "class": "lanthanide", "charge": 3, "radius6": 0.745, "radius8": 0.87, "ox": [3], "common_ox": 3, "pearson": "hard", "radioactive": false, "alpha": 0.0, "gamma": 0.0, "d_pref": "cation", "need_shield_mm": 0.0, "critical_mass_kg": null, "note": "半径远小于镧系，化学行为介于 Al 与 Ln 之间"}}, "SOLVENTS": {"water": {"name": "水 / 稀水溶液", "eps": 80.1, "dipole": 1.85, "logp": -1.38, "water_sol": 1000000.0, "flash": null, "ghs": [], "rad_stable": 1.0, "visc": 0.89, "polarity": "high", "type": "aqueous", "cost": 1, "note": "通用介质，介电常数高，利于离子解离"}, "hno3": {"name": "硝酸 (0.1-6 M)", "eps": 55.0, "dipole": 2.17, "logp": -1.2, "water_sol": 1000000.0, "flash": null, "ghs": ["H272", "H314", "H290"], "rad_stable": 0.9, "visc": 1.0, "polarity": "high", "type": "aqueous", "cost": 2, "note": "核燃料后处理标准介质，硝酸根为配位阴离子"}, "hcl": {"name": "盐酸 (0.1-12 M)", "eps": 60.0, "dipole": 1.11, "logp": -0.8, "water_sol": 1000000.0, "flash": null, "ghs": ["H314", "H290", "H335"], "rad_stable": 0.95, "visc": 1.9, "polarity": "high", "type": "aqueous", "cost": 1, "note": "氯离子强配位，便于阴离子交换"}, "h2so4": {"name": "硫酸 (0.1-9 M)", "eps": 100.0, "dipole": 2.72, "logp": -2.2, "water_sol": 1000000.0, "flash": null, "ghs": ["H314", "H290"], "rad_stable": 0.95, "visc": 26.7, "polarity": "high", "type": "aqueous", "cost": 1, "note": "硫酸根强络合 Th/Zr，不利于部分萃取体系"}, "tbp": {"name": "磷酸三丁酯 (TBP)", "eps": 8.0, "dipole": 3.07, "logp": 4.0, "water_sol": 280, "flash": 146.0, "ghs": ["H302", "H312", "H315", "H319"], "rad_stable": 0.55, "visc": 3.32, "polarity": "medium", "type": "organic", "cost": 4, "note": "中性磷氧萃取剂，辐解产生 DBP/MBP 需监测"}, "dodecane": {"name": "正十二烷", "eps": 2.01, "dipole": 0.0, "logp": 6.1, "water_sol": 0.0037, "flash": 74.0, "ghs": ["H304", "H315"], "rad_stable": 0.7, "visc": 1.35, "polarity": "low", "type": "organic", "cost": 3, "note": "PUREX/TALSPEAK 标准稀释剂，闪点较高"}, "kerosene": {"name": "煤油 / 正构烷烃", "eps": 2.0, "dipole": 0.0, "logp": 5.5, "water_sol": 0.005, "flash": 38.0, "ghs": ["H226", "H304", "H315"], "rad_stable": 0.65, "visc": 1.6, "polarity": "low", "type": "organic", "cost": 2, "note": "工业稀释剂，闪点低需防火"}, "hexane": {"name": "正己烷", "eps": 1.88, "dipole": 0.0, "logp": 3.9, "water_sol": 0.0095, "flash": -22.0, "ghs": ["H225", "H304", "H315", "H336", "H361"], "rad_stable": 0.6, "visc": 0.31, "polarity": "low", "type": "organic", "cost": 3, "note": "极易燃，闪点 -22 °C，神经毒性"}, "toluene": {"name": "甲苯", "eps": 2.38, "dipole": 0.36, "logp": 2.73, "water_sol": 526, "flash": 4.0, "ghs": ["H225", "H304", "H315", "H336", "H361"], "rad_stable": 0.65, "visc": 0.59, "polarity": "low", "type": "organic", "cost": 2, "note": "芳香族，闪点 4 °C，生殖毒性"}, "xylene": {"name": "二甲苯", "eps": 2.27, "dipole": 0.3, "logp": 3.15, "water_sol": 175, "flash": 25.0, "ghs": ["H226", "H304", "H315", "H335"], "rad_stable": 0.65, "visc": 0.62, "polarity": "low", "type": "organic", "cost": 2, "note": "芳烃类，常用于 BTBP/BTPhen 体系"}, "octanol": {"name": "正辛醇", "eps": 10.3, "dipole": 1.76, "logp": 3.0, "water_sol": 540, "flash": 81.0, "ghs": ["H302", "H315", "H318"], "rad_stable": 0.75, "visc": 8.9, "polarity": "medium", "type": "organic", "cost": 4, "note": "BTP/BTBP 萃取常用极性稀释剂"}, "etoac": {"name": "乙酸乙酯", "eps": 6.02, "dipole": 1.78, "logp": 0.73, "water_sol": 80000, "flash": -4.0, "ghs": ["H225", "H319", "H336"], "rad_stable": 0.7, "visc": 0.43, "polarity": "medium", "type": "organic", "cost": 2, "note": "水溶性高，乳化与损失风险大"}, "il_bmim": {"name": "离子液体 [BMIM][Tf2N]", "eps": 11.0, "dipole": 4.0, "logp": null, "water_sol": 1000, "flash": null, "ghs": ["H302", "H315", "H411"], "rad_stable": 0.85, "visc": 52.0, "polarity": "medium", "type": "ionic", "cost": 9, "note": "极低蒸气压，辐射稳定性好，但黏度大传质慢、成本高"}, "sc_co2": {"name": "超临界 CO2", "eps": 1.5, "dipole": 0.0, "logp": null, "water_sol": 2000, "flash": null, "ghs": ["H280"], "rad_stable": 1.0, "visc": 0.03, "polarity": "low", "type": "supercritical", "cost": 6, "note": "绿色溶剂，需高压设备，须配氟化配体才有萃取能力"}}, "IMPURITIES": {"sulfide": {"name": "硫化物 (S2-/H2S)", "penalty": {"precip_oh": 0.45, "ix": 0.8, "precip_ox": 0.3, "extraction": 0.5, "membrane": 0.5}, "mechanism": "与多数重金属生成难溶硫化物，同时释放 H2S 剧毒气体", "pretreat": "先酸化排气并碱液吸收 H2S，再分步硫化物沉淀除杂", "danger": ["high", "H2S 为剧毒窒息性气体 (GHS H330)，密闭操作 + 强制通风"]}, "peroxide": {"name": "过氧化物 (H2O2 / 过氧乙酸)", "penalty": {"extraction": 0.45, "ix": 0.7, "precip_ox": 0.5, "precip_oh": 0.35, "membrane": 0.45}, "mechanism": "强氧化剂，可改变 Ce/Sm/Np/Pu 价态，与有机稀释剂接触有燃爆风险", "pretreat": "先用催化分解（MnO2 或亚硫酸钠还原）淬灭过氧化物", "danger": ["high", "氧化性 H272；与有机相/树脂接触可自燃或爆炸"]}, "phosphate": {"name": "磷酸盐 (PO4 3-)", "penalty": {"precip_oh": 0.5, "ix": 0.75, "precip_ox": 0.55, "extraction": 0.4, "membrane": 0.6}, "mechanism": "与 Th(IV)/U(VI)/Ln(III) 生成难溶磷酸盐，堵塞树脂", "pretreat": "先加钙/铁盐共沉淀除磷酸盐，或改用草酸盐体系", "danger": ["low", "本身低毒，但会夹带放射性形成难处理污泥"]}, "fluoride": {"name": "氟化物 (F-)", "penalty": {"extraction": 0.4, "ix": 0.55, "precip_ox": 0.6, "precip_oh": 0.5, "membrane": 0.5}, "mechanism": "强络合 Th/U，抑制萃取；腐蚀玻璃与石英设备", "pretreat": "加铝盐/硼酸络合氟，或改用耐 HF 的 PTFE 设备", "danger": ["high", "H314 腐蚀性；HF 穿透皮肤破坏骨质与血钙"]}, "chloride": {"name": "高浓氯化物 (Cl-)", "penalty": {"extraction": 0.7, "ix": 0.85, "precip_oh": 0.65, "precip_ox": 0.7, "membrane": 0.6}, "mechanism": "竞争配位降低 D 值；对不锈钢设备产生点蚀", "pretreat": "稀释或用硝酸置换氯离子", "danger": ["medium", "高温下与有机物生成氯化物腐蚀；无强毒但腐蚀设备"]}, "chelate": {"name": "有机螯合剂 (EDTA / 柠檬酸)", "penalty": {"extraction": 0.35, "precip_oh": 0.3, "ix": 0.5, "precip_ox": 0.3, "membrane": 0.4}, "mechanism": "与目标离子形成稳定水溶配合物，阻止萃取与沉淀，降低回收率", "pretreat": "先氧化分解有机物（Fenton 或紫外/过硫酸盐）", "danger": ["low", "本身低毒，但会大幅拉低分离效率并增加 COD"]}, "nitrate": {"name": "硝酸盐 / 亚硝酸盐", "penalty": {"precip_oh": 0.15, "ix": 0.9, "precip_ox": 0.2, "extraction": 0.85, "membrane": 0.85}, "mechanism": "提供盐析效应助萃 U/Pu（有益），但亚硝酸盐会干扰价态调节", "pretreat": "对 TBP 体系可直接利用盐析效应；对还原反萃需先破坏亚硝酸", "danger": ["medium", "亚硝酸盐与胺类可生成亚硝胺致癌物"]}, "sulfate": {"name": "硫酸盐 (SO4 2-)", "penalty": {"extraction": 0.5, "ix": 0.7, "precip_oh": 0.7, "precip_ox": 0.45, "membrane": 0.6}, "mechanism": "强络合 Th/Zr/Ba，抑制阳离子交换与中性萃取剂萃取", "pretreat": "加钡盐沉淀硫酸根后再进主流程", "danger": ["low", "低毒，但形成放射性硫酸盐淤泥"]}, "oil": {"name": "油类 / 乳化剂 / 表面活性剂", "penalty": {"extraction": 0.3, "ix": 0.45, "membrane": 0.3, "precip_ox": 0.35, "precip_oh": 0.35}, "mechanism": "造成乳化、第三相与液膜污染，严重降低相分离效率", "pretreat": "先破乳（加热/盐析/离心）并用活性炭或树脂除油", "danger": ["medium", "有机物与硝酸接触有红油爆炸风险"]}}, "PROCESSES": {"oxalate_precip": {"name": "草酸盐选择性沉淀", "family": "沉淀", "units": 3, "targets": ["lanthanide", "actinide"], "types": ["aqueous"], "ph": [1.0, 4.0], "steps_per_unit": 1, "D": {"lanthanide": 2.4, "actinide": 2.2, "fission": 0.12}, "sf_base": 18.0, "complexity": 22, "cost": 2, "solvent_loss": 4.0, "waste_factor": 1.4, "needs_organic": false, "acid_tolerant": 0.9, "carbon": {"energy_kwh_l": 0.09, "reagent_kg_l": 0.03, "reagent_factor": 2.2, "residual_frac": 0.08}, "desc": "以草酸为沉淀剂，Th(IV)/Ln(III)/An(III) 定量生成草酸盐，碱金属与碱土金属留在液相", "steps": [["配制料液", "在带夹套的玻璃反应釜中加入全部料液，用稀硝酸/氨水调 pH 至 1.0-4.0", "玻璃夹套反应釜（1 L）、pH 计、机械搅拌桨", "10-15 min", "稀硝酸或氨水适量（约 2-5 mL）调 pH", "pH 计读数稳定在 1.0-4.0 且 1 min 内不再漂移"], ["投加沉淀剂", "按 0.5-1.5 M 目标浓度缓慢滴加草酸溶液，边加边搅拌防止局部过浓", "恒压滴液漏斗、蠕动泵、机械搅拌器", "20-30 min", "草酸 9.0 g（配成 1 M 溶液约 100 mL）", "滴加处白色沉淀不再增多、上清液出现澄清层即停止"], ["加热陈化", "升温至 60-80 °C 搅拌 1-2 h，使草酸盐晶体长大便于过滤", "恒温水浴/夹套循环、接触式温度计、机械搅拌器", "60-120 min", "无需补加试剂", "沉淀由絮状转为致密颗粒、上清液完全澄清"], ["冷却过滤", "自然降至室温后真空抽滤，用 0.1 M 草酸洗涤滤饼 3 次", "布氏漏斗/砂芯漏斗、真空泵、抽滤瓶、定量滤纸（中速）", "25-35 min", "0.1 M 草酸洗涤液约 30 mL×3 次", "滤液滴下由浑浊转为清亮，滤饼无粘壁"], ["干燥称重", "滤饼于 80 °C 干燥至恒重，称量计算回收率", "电热鼓风干燥箱、分析天平（0.1 mg）、干燥器", "120 min", "无需补加试剂", "两次称量差值 < 0.5 mg 即达恒重"]], "conditions": "0.5-1.5 M 草酸，60-80 °C，搅拌 1-2 h，陈化后过滤", "recovery": "Ln/An 回收率 96-99.5%", "ref": "NEA-TDB Vol.11 (Hummel et al. 2005) 草酸盐相；IUPAC-NIST Solubility Data Series"}, "hydroxide_precip": {"name": "碱性 / 氨水氢氧化物沉淀", "family": "沉淀", "units": 3, "targets": ["lanthanide", "actinide", "fission"], "types": ["aqueous"], "ph": [8.5, 11.0], "steps_per_unit": 1, "D": {"lanthanide": 2.0, "actinide": 1.9, "fission": 0.3}, "sf_base": 6.0, "complexity": 18, "cost": 1, "solvent_loss": 3.0, "waste_factor": 1.6, "needs_organic": false, "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.06, "reagent_kg_l": 0.02, "reagent_factor": 1.1, "residual_frac": 0.08}, "desc": "调 pH 至 9-11 使 Ln(III)/An(III)/Mg 等生成氢氧化物沉淀，Cs/Sr 部分共沉", "steps": [["配制料液", "料液转入反应釜并预热，pH 计两点校准", "玻璃夹套反应釜（1 L）、pH 计、机械搅拌桨", "10 min", "稀硝酸适量（约 2 mL）预热调酸", "料液温度稳定至 40-50 °C、pH 读数稳定"], ["调 pH 沉淀", "缓慢滴加浓氨水或 NaOH 至 pH 9-11，观察沉淀完全（上清液澄清）", "恒压滴液漏斗、pH 计、机械搅拌器、局部排风罩", "15-25 min", "浓氨水约 12 mL（或 2 M NaOH 约 35 mL）", "上清液澄清、pH 稳定在 9-11 且 2 min 内不变"], ["保温熟化", "室温搅拌熟化使无定形沉淀转为易过滤形态", "机械搅拌器、恒温水浴", "30-45 min", "无需补加试剂", "沉淀由无定形絮状转为易沉降颗粒、沉降速度明显加快"], ["过滤洗涤", "真空抽滤，用去离子水洗涤滤饼 3-4 次去除夹带盐", "布氏漏斗、真空泵、抽滤瓶、定量滤纸", "30-40 min", "去离子水约 40 mL×3-4 次", "滤液电导率降至 < 50 μS/cm 表示可溶盐洗净"], ["干燥灼烧", "80 °C 干燥后称重；如需氧化物形态再于 600 °C 灼烧", "鼓风干燥箱、马弗炉、分析天平、干燥器", "150 min", "无需补加试剂", "滤饼恒重且不再失重、外观均匀无潮解"]], "conditions": "NH4OH 或 NaOH 调 pH 9-11，室温，需洗涤去除夹带盐", "recovery": "Ln 回收率 92-98%，但选择性差、易夹带", "ref": "CRC Handbook, Ln(OH)3 Ksp 数据；IUPAC Stability Constants Database"}, "carbonate_precip": {"name": "碳酸盐 / 复盐沉淀", "family": "沉淀", "units": 3, "targets": ["lanthanide", "actinide"], "types": ["aqueous"], "ph": [5.0, 8.0], "steps_per_unit": 1, "D": {"lanthanide": 1.8, "actinide": 1.6, "fission": 0.25}, "sf_base": 9.0, "complexity": 24, "cost": 2, "solvent_loss": 5.0, "waste_factor": 1.8, "needs_organic": false, "acid_tolerant": 0.7, "carbon": {"energy_kwh_l": 0.08, "reagent_kg_l": 0.025, "reagent_factor": 1.6, "residual_frac": 0.08}, "desc": "利用碳酸钠/碳酸铵生成稀土碳酸盐或钠复盐，与 Cs/Sr 的溶解度差异实现分离", "steps": [["配制料液", "料液调至弱酸性，pH 计校准", "玻璃反应釜（1 L）、pH 计、搅拌桨", "10 min", "稀硝酸适量（约 2-3 mL）调至弱酸性", "pH 稳定在 4-5、溶液澄清无悬浮物"], ["投加碳酸盐", "控温 50-90 °C 缓慢加入 Na2CO3 或 (NH4)2CO3 至过量，控过饱和度防胶体", "恒温水浴、恒压滴液漏斗、机械搅拌器", "20-30 min", "Na2CO3 约 8.5 g（或 (NH4)2CO3 约 12 g）", "沉淀不再增多、上层液体澄清且无新胶体生成"], ["保温陈化", "恒温搅拌使碳酸盐结晶长大", "恒温水浴、机械搅拌器、温度计", "45-60 min", "无需补加试剂", "沉淀由胶体转为可滤颗粒、溶液不再发黏"], ["过滤洗涤", "抽滤并以稀碳酸铵溶液洗涤，防止复盐溶解损失", "布氏漏斗、真空泵、抽滤瓶、定量滤纸", "30-40 min", "稀碳酸铵溶液约 30 mL×3 次", "滤液无白色浑浊、滤饼无溶解塌陷"], ["干燥称重", "80 °C 干燥至恒重并称量", "鼓风干燥箱、分析天平、干燥器", "120 min", "无需补加试剂", "恒重且碳酸盐不被空气潮解结块"]], "conditions": "Na2CO3 或 (NH4)2CO3 过量，50-90 °C，需控制过饱和度防胶体", "recovery": "Ln 回收率 90-97%（视元素而异）", "ref": "NEA-TDB 稀土碳酸盐物种；CRC Handbook 溶解度数据"}, "sulfide_step": {"name": "硫化物分步沉淀除杂", "family": "预处理/沉淀", "units": 4, "targets": ["fission", "actinide"], "types": ["aqueous"], "ph": [1.0, 6.0], "steps_per_unit": 1, "D": {"fission": 1.5, "actinide": 1.0, "lanthanide": 0.4}, "sf_base": 7.5, "complexity": 30, "cost": 2, "solvent_loss": 6.0, "waste_factor": 1.5, "needs_organic": false, "acid_tolerant": 0.6, "carbon": {"energy_kwh_l": 0.07, "reagent_kg_l": 0.015, "reagent_factor": 2.0, "residual_frac": 0.1}, "desc": "按溶度积差异分步投加 Na2S/H2S 依次析出 Cu/Co/Ni 等，将杂质与目标元素错开", "steps": [["分段配制", "料液分为若干份，逐级调 pH 至 1 / 3 / 5 建立沉淀窗口", "玻璃夹套反应釜（1 L）、pH 计、机械搅拌桨", "20 min", "稀硝酸或氨水适量，分 3 份调至 pH 1 / 3 / 5", "各段 pH 稳定 1 min 无漂移"], ["投加硫化物", "在强排风下滴加 Na2S 溶液，按溶度积顺序依次析出杂质硫化物", "恒压滴液漏斗、机械搅拌器、通风柜、H2S 固定式报警器", "25-35 min", "Na2S 溶液（0.5 M）约 6-10 mL/段", "出现黑色/黄褐色硫化物沉淀且上清液不再出现新沉淀即停止"], ["尾气吸收", "反应全程抽风经碱性吸收塔吸收逸出的 H2S", "碱液喷淋吸收塔、引风机、H2S 检测管", "与反应同步", "2 M NaOH 吸收液约 200 mL", "吸收塔出口 H2S 检测管不再变色（< 1 ppm）"], ["过滤分离", "趁热真空抽滤，滤液进入下一级沉淀窗口", "布氏漏斗、真空泵、抽滤瓶、定量滤纸", "30-40 min", "无需补加试剂", "滤液澄清透亮、无明显胶体穿滤"], ["洗涤检测", "洗涤滤饼并检测滤液金属残留确认除杂完成", "去离子水洗瓶、ICP-MS 取样管、分析天平", "60 min", "去离子水约 30 mL×3 次", "滤液经 ICP-MS 检测目标金属残留 < 1 ppm"]], "conditions": "分段调 pH 1 / 3 / 5 逐级沉淀，需 H2S 尾气吸收", "recovery": "除杂率 >98%，作为前置净化效果最佳", "ref": "CRC Handbook Ksp 序列；GHS H330 气体管理规范"}, "cation_ix": {"name": "阳离子交换色谱 (α-HIBA 梯度)", "family": "离子交换", "units": 5, "targets": ["lanthanide", "actinide", "fission"], "types": ["aqueous"], "ph": [3.0, 5.0], "steps_per_unit": 1, "D": {"lanthanide": 3.0, "actinide": 2.6, "fission": 0.9}, "sf_base": 4.5, "complexity": 40, "cost": 4, "solvent_loss": 2.0, "waste_factor": 2.2, "needs_organic": false, "acid_tolerant": 0.5, "carbon": {"energy_kwh_l": 0.05, "reagent_kg_l": 0.02, "reagent_factor": 3.0, "residual_frac": 0.06}, "desc": "Dowex 50W / AG MP-50 强酸树脂，α-羟基异丁酸 (HIBA) 梯度淋洗实现相邻稀土分离", "steps": [["装柱平衡", "湿法装填阳离子交换树脂并用起始缓冲液平衡至流出液 pH 稳定", "玻璃层析柱（Φ20×400 mm）、恒流泵、pH 计、树脂（Dowex 50W / AG MP-50）", "45-60 min", "起始缓冲液约 150 mL 过柱", "流出液 pH 与流入液一致（ΔpH < 0.1）"], ["上柱吸附", "料液以恒定流速上柱，目标离子吸附于树脂", "恒流泵、进样阀、部分收集器、量筒", "30-45 min", "料液 200 mL 全量上柱", "流出液出现目标离子穿透（显色或在线检测）即上柱完毕"], ["梯度淋洗", "用 α-HIBA 梯度淋洗液分步洗脱，按流出曲线分段收集", "梯度混合器、恒流泵、部分收集器、自动馏分收集器", "180-360 min", "0.1-0.5 M α-HIBA 淋洗液约 500 mL", "淋洗曲线出现目标峰且基线回落至本底"], ["检测分段", "逐段测电导/吸光度绘制淋洗曲线，合并目标峰", "电导率仪、紫外-可见分光光度计、试管架", "60 min", "无试剂（取样检测）", "各馏分吸光度/电导曲线无重叠拖尾"], ["树脂再生", "用 2 M HNO3 洗脱残留后转回起始缓冲液备用", "恒流泵、酸碱储液瓶、废液桶", "60 min", "2 M HNO3 约 100 mL 后缓冲液约 150 mL", "流出液恢复正常 pH，树脂颜色回到初始状态"]], "conditions": "0.1-0.5 M HIBA，pH 4.0-4.6，流速 0.5-2 mL/min，柱温 25-60 °C", "recovery": "单元素纯度可达 99.9%，但周期长、稀释倍数大", "ref": "IUPAC Stability Constants Database (HIBA-Ln 逐级常数); NEA-TDB 稀土卷"}, "anion_ix": {"name": "阴离子交换 (硝酸根络阴离子)", "family": "离子交换", "units": 4, "targets": ["actinide", "fission"], "types": ["aqueous"], "ph": [0.0, 2.0], "steps_per_unit": 1, "D": {"actinide": 3.2, "fission": 2.0, "lanthanide": 0.25}, "sf_base": 14.0, "complexity": 32, "cost": 3, "solvent_loss": 2.5, "waste_factor": 1.9, "needs_organic": false, "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.05, "reagent_kg_l": 0.02, "reagent_factor": 2.0, "residual_frac": 0.06}, "desc": "强碱性阴离子树脂 (AG 1-X8)，U/Th/Pu 在高浓硝酸中形成络阴离子被吸附，Ln 直接穿透", "steps": [["装柱转型", "装填强碱性阴离子树脂，用 6-8 M HNO3 平衡至硝酸根型", "玻璃层析柱、恒流泵、强碱阴离子树脂（AG 1-X8）、PTFE 管路", "45-60 min", "6 M HNO3 约 120 mL 过柱", "流出液酸度与流入液一致、树脂完全转为硝酸根型"], ["高酸上柱", "在 6-8 M HNO3 介质中将料液上柱，U/Th/Pu 形成络阴离子被吸附", "恒流泵、进样阀、耐酸泵管、通风柜", "40-60 min", "料液用 6 M HNO3 稀释至约 250 mL 后上柱", "流出液检测不到目标离子（已全部吸附）"], ["淋洗穿透", "用同浓度硝酸淋洗，Ln(III) 因不吸附直接穿透收集", "恒流泵、部分收集器、量筒", "60-90 min", "6 M HNO3 约 150 mL 淋洗", "流出液在 254 nm 无吸收峰即淋洗结束"], ["梯度解吸", "降低硝酸浓度至 0.1-1 M 将 U/Th 解吸收集", "梯度混合器、恒流泵、部分收集器", "60-90 min", "0.2 M HNO3 约 150 mL 解吸", "流出液出现目标离子浓度峰后回落至本底"], ["柱体维护", "监测柱压与树脂颜色，记录累积辐照剂量", "压力表、剂量计、个人剂量卡", "10 min", "无需补加试剂", "柱压稳定无升高、树脂无变色破碎"]], "conditions": "6-8 M HNO3 上柱，0.1-1 M HNO3 淋洗，柱压需控制防辐解", "recovery": "U/Th 回收率 >99%，是 U-Ln 分离的经典手段", "ref": "ASTM C761 / 核级阴离子交换标准; NEA-TDB Vol.5 U 硝酸根络合常数"}, "chelex": {"name": "螯合树脂 (Chelex-100) 除杂", "family": "离子交换", "units": 3, "targets": ["fission"], "types": ["aqueous"], "ph": [5.0, 9.0], "steps_per_unit": 1, "D": {"fission": 3.4, "lanthanide": 1.4, "actinide": 1.0}, "sf_base": 11.0, "complexity": 22, "cost": 3, "solvent_loss": 2.5, "waste_factor": 1.3, "needs_organic": false, "acid_tolerant": 0.4, "carbon": {"energy_kwh_l": 0.04, "reagent_kg_l": 0.01, "reagent_factor": 2.5, "residual_frac": 0.05}, "desc": "亚氨基二乙酸功能基，优先捕集过渡金属 (Co/Ni/Cu)，碱金属碱土金属基本不保留", "steps": [["装柱平衡", "装填 Chelex-100 并调至 pH 5-8 工作区间", "玻璃层析柱、恒流泵、Chelex-100 树脂、pH 计", "40-50 min", "pH 6 缓冲液约 100 mL 过柱", "流出液 pH 稳定在 5-8"], ["上柱捕集", "料液恒流上柱，过渡金属被亚氨基二乙酸基捕集", "恒流泵、进样阀、部分收集器", "30-40 min", "料液 200 mL 全量上柱", "流出液目标金属浓度降至 < 1 ppm 表示已捕集"], ["洗脱目标", "用 2 M HNO3 洗脱捕集的过渡金属", "恒流泵、耐酸管路、部分收集器", "30-45 min", "2 M HNO3 约 80 mL", "流出液金属浓度峰出现后回落至本底"], ["冲洗再生", "清水冲洗至中性后备用", "恒流泵、去离子水储瓶", "20-30 min", "去离子水约 120 mL", "流出液 pH 回到中性（6-7）"]], "conditions": "pH 5-8 上柱，2 M HNO3 洗脱；适合作为精制段", "recovery": "过渡金属去除率 >95%", "ref": "IUPAC Stability Constants Database (IDA-金属常数); Bio-Rad Chelex 技术资料"}, "purex_tbp": {"name": "溶剂萃取 — TBP / PUREX", "family": "溶剂萃取", "units": 6, "targets": ["actinide"], "types": ["aqueous"], "ph": [0.0, 1.0], "steps_per_unit": 1, "D": {"actinide": 8.0, "lanthanide": 0.35, "fission": 1.2}, "sf_base": 23.0, "complexity": 55, "cost": 5, "solvent_loss": 12.0, "waste_factor": 2.6, "needs_organic": true, "diluent": ["dodecane", "kerosene", "tbp"], "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.1, "reagent_kg_l": 0.03, "reagent_factor": 3.5, "residual_frac": 0.09}, "desc": "30% TBP/正十二烷，高浓硝酸下萃取 U(VI)/Pu(IV)/Th(IV)，Ln 与 Cs/Sr 留在水相", "steps": [["配有机相", "量取 30% TBP 与正十二烷混合均匀，用等体积稀硝酸预平衡 2 次", "分液漏斗（1 L）、量筒、试剂瓶、防护手套与护目镜", "20-30 min", "30% TBP/正十二烷 约 200 mL，稀硝酸预平衡 2 次各 100 mL", "两相分界清晰、有机相无乳化悬浊"], ["萃取接触", "按 O/A=1:1 将有机相与 3-6 M 硝酸料液在混合澄清槽/离心萃取器中多级逆流接触", "混合澄清槽或离心萃取器（5-8 级）、恒流泵、流量计", "30-60 min", "3 M HNO3 料液 200 mL，相比 O/A = 1:1", "静置后两相快速分离（< 3 min）、界面无污物堆积"], ["分相", "静置分相，取有机相并监测界面污物与第三相", "分液漏斗/相分离器、界面观察窗、取样器", "15-20 min", "无需补加试剂", "界面清晰稳定、无第三相析出"], ["洗涤", "有机相用 0.5 M 硝酸洗涤 1-2 次去除夹带裂变产物", "分液漏斗、恒流泵、废液收集瓶", "15-25 min", "0.5 M HNO3 约 100 mL", "洗涤液放射性活度降至本底水平"], ["反萃", "用 0.1-0.3 M 稀硝酸反萃 U/Pu 至水相，收集产品液", "反萃段混合澄清槽、恒流泵、产品液接收瓶", "30-45 min", "0.1 M HNO3 约 150 mL", "水相目标离子浓度不再升高、有机相显色褪去"], ["溶剂再生", "有机相碱洗除 DBP/MBP 等辐解产物后回用", "碱洗槽、离心分离机、辐解产物检测仪", "40-60 min", "0.2 M Na2CO3 约 100 mL", "振荡后界面污物消失、两相分离时间恢复正常"]], "conditions": "3-6 M HNO3 萃取，0.1-0.3 M HNO3 反萃；相比 O/A 1:1，5-8 级", "recovery": "U/Pu 回收率 >99.5%，工业级成熟度最高", "ref": "Horwitz et al., Solvent Extr. Ion Exch.; PNNL-19655; IAEA-TECDOC PUREX 报告"}, "hdehp_talspeak": {"name": "溶剂萃取 — HDEHP / TALSPEAK", "family": "溶剂萃取", "units": 6, "targets": ["lanthanide", "actinide"], "types": ["aqueous"], "ph": [2.0, 4.0], "steps_per_unit": 1, "D": {"lanthanide": 7.5, "actinide": 0.5, "fission": 0.6}, "sf_base": 100.0, "complexity": 60, "cost": 5, "solvent_loss": 10.0, "waste_factor": 2.4, "needs_organic": true, "diluent": ["dodecane", "kerosene", "toluene", "octanol"], "acid_tolerant": 0.35, "carbon": {"energy_kwh_l": 0.11, "reagent_kg_l": 0.035, "reagent_factor": 3.2, "residual_frac": 0.09}, "desc": "HDEHP 萃取 Ln 入有机相，DTPA 水相掩蔽 An 留在水相，实现 Ln/An 互分 (SF>100)", "steps": [["配两相", "配制 0.5-1.0 M HDEHP/正十二烷有机相，水相为 pH 2-3 乳酸缓冲 + 0.05 M DTPA", "分液漏斗、量筒、pH 计、缓冲液配制瓶", "25-35 min", "0.6 M HDEHP/正十二烷 200 mL；水相乳酸缓冲 + 0.05 M DTPA 共 200 mL", "两相澄清无乳化、pH 稳定在 2-3"], ["萃取接触", "两相按设定相比混合，HDEHP 萃取 Ln 入有机相而 DTPA 掩蔽 An 留水相", "恒温振荡器/离心萃取器、恒流泵、水浴控温", "40-60 min", "料液 200 mL，相比 O/A = 1:1", "静置 10 min 内两相完全分离、界面无絮状物"], ["静置分相", "静置 10-15 min 分相，避免夹带乳化层", "分液漏斗、相分离器、离心分离机", "15-20 min", "无需补加试剂", "界面清晰、夹带水相体积 < 2%"], ["洗涤", "有机相用乳酸缓冲液洗涤去除夹带 DTPA", "分液漏斗、恒流泵", "15-20 min", "乳酸缓冲液约 80 mL", "洗涤液不再显 DTPA 络合色"], ["反萃", "用 4-6 M 硝酸反萃 Ln 至水相回收", "分液漏斗、耐酸管路、产品接收瓶", "25-40 min", "4 M HNO3 约 120 mL", "水相目标元素浓度峰出现后回落"], ["溶剂再生", "碱洗除界面污物后回用并检测 D 值漂移", "碱洗槽、离心分离机、萃取性能测试装置", "40-60 min", "0.2 M Na2CO3 约 100 mL", "有机相恢复澄清、D 值复测漂移 < 5%"]], "conditions": "0.5-1.0 M HDEHP，pH 2-3 乳酸缓冲，DTPA 0.05 M；动力学慢需强化传质", "recovery": "Ln/An 分离因子可达 100 以上，是 An-Ln 分离金标准", "ref": "Nilsson & Nash, Solvent Extr. Ion Exch. 2007; Braley et al. 2012 (HEH[EHP]/HEDTA 改进)"}, "todga": {"name": "溶剂萃取 — TODGA / i-SANEX", "family": "溶剂萃取", "units": 5, "targets": ["lanthanide", "actinide"], "types": ["aqueous"], "ph": [0.0, 2.5], "steps_per_unit": 1, "D": {"lanthanide": 9.0, "actinide": 9.5, "fission": 0.5}, "sf_base": 30.0, "complexity": 52, "cost": 7, "solvent_loss": 9.0, "waste_factor": 2.3, "needs_organic": true, "diluent": ["dodecane", "kerosene", "octanol"], "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.11, "reagent_kg_l": 0.03, "reagent_factor": 4.0, "residual_frac": 0.09}, "desc": "四辛基二甘醇酰胺 (TODGA) 在高酸度下共萃 Ln(III)+An(III)，再用亲水配体选择性反萃 An", "steps": [["配有机相", "配制 0.2 M TODGA/正十二烷并用 3-4 M 硝酸预平衡", "分液漏斗、量筒、试剂瓶", "20-30 min", "0.2 M TODGA/正十二烷 200 mL，3 M HNO3 预平衡 2 次", "平衡后水相酸度不再变化"], ["萃取接触", "高酸度下共萃 Ln(III)+An(III) 入有机相", "离心萃取器/混合澄清槽、恒流泵、流量计", "30-50 min", "3 M HNO3 料液 200 mL，相比 1:1", "两相分离迅速、无第三相生成"], ["分相", "静置分相并观察第三相生成趋势", "分液漏斗、相分离器、恒温槽", "15-20 min", "无需补加试剂", "界面清晰、无絮状界面污物"], ["选择性反萃", "用 0.5 M 亲水配体（如 DTPA/EDTA 衍生物）选择性反萃 An 至水相", "反萃段萃取器、恒流泵、产品液接收瓶", "40-60 min", "0.5 M 亲水配体约 150 mL", "An 反萃完全（水相浓度峰回落至本底）"], ["二次反萃", "再用稀硝酸反萃残余 Ln 完成分组", "分液漏斗、恒流泵、产品接收瓶", "25-35 min", "0.05 M HNO3 约 120 mL", "Ln 浓度峰出现后回落至本底"], ["溶剂再生", "碱洗再生有机相并监测配体降解", "碱洗槽、离心分离机、色谱检测仪", "40-60 min", "0.2 M Na2CO3 约 100 mL", "配体降解产物被洗除、D 值复测偏差 < 5%"]], "conditions": "0.2 M TODGA / 正十二烷，3-4 M HNO3 萃取，0.5 M 亲水配体反萃", "recovery": "Ln+An 共萃率 >99%，An 反萃率 97-99%（Sasaki et al. 2022: Am 98.7%）", "ref": "Sasaki et al., Solvent Extr. Ion Exch. 2022, DOI 10.1080/01496395.2022.2080707; Modolo et al."}, "cmpo_truex": {"name": "溶剂萃取 — CMPO / TRUEX", "family": "溶剂萃取", "units": 6, "targets": ["actinide", "lanthanide"], "types": ["aqueous"], "ph": [0.0, 1.5], "steps_per_unit": 1, "D": {"actinide": 9.5, "lanthanide": 8.0, "fission": 0.8}, "sf_base": 12.0, "complexity": 62, "cost": 7, "solvent_loss": 11.0, "waste_factor": 2.5, "needs_organic": true, "diluent": ["dodecane", "kerosene", "tbp"], "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.12, "reagent_kg_l": 0.035, "reagent_factor": 4.2, "residual_frac": 0.1}, "desc": "0.2 M CMPO + 1.4 M TBP，从 1-3 M HNO3 共萃 TRU (Np/Pu/Am/Cm) 与 Ln 裂片", "steps": [["配有机相", "配制 0.2 M CMPO + 1.4 M TBP/正十二烷，稀硝酸预平衡", "分液漏斗、量筒、试剂瓶、防护手套", "25-35 min", "0.2 M CMPO + 1.4 M TBP/正十二烷 共 200 mL", "预平衡后两相澄清、无第三相"], ["萃取接触", "1-3 M 硝酸下共萃 TRU 与 Ln 至有机相，控温防第三相", "离心萃取器/混合澄清槽、恒温循环、恒流泵", "40-60 min", "1-3 M HNO3 料液 200 mL，相比 1:1，控温 25-40 °C", "静置后两相分离、界面无第三相堆积"], ["分相与界面处理", "静置分相，必要时升温或加相调节剂抑制第三相", "分液漏斗、相分离器、恒温槽、界面观察窗", "20-30 min", "相调节剂（如 TBP）适量约 5-10 mL", "第三相消失、界面恢复清晰"], ["洗涤", "有机相用稀硝酸洗涤去除夹带裂变产物", "分液漏斗、恒流泵", "15-25 min", "0.5 M HNO3 约 100 mL", "洗涤液无裂变产物显色"], ["反萃", "用草酸或碳酸铵溶液反萃 TRU 与 Ln 至水相", "反萃段萃取器、恒流泵、产品接收瓶", "40-60 min", "0.1 M 草酸或 0.5 M 碳酸铵 约 150 mL", "水相 TRU 浓度峰出现后回落至本底"], ["溶剂再生", "碱洗再生并检测 CMPO 辐解程度", "碱洗槽、离心分离机、色谱检测仪", "50-70 min", "0.2 M Na2CO3 约 100 mL", "有机相澄清、界面污物完全去除"]], "conditions": "1-3 M HNO3 萃取，草酸/碳酸铵反萃；需控制第三相生成", "recovery": "TRU 回收率 >99.9%，可处理高放废液", "ref": "Horwitz et al. 1985 (CMPO); PNNL-19655 TRUEX 章节"}, "amine_extract": {"name": "溶剂萃取 — 胺类 / Aliquat 336", "family": "溶剂萃取", "units": 5, "targets": ["actinide", "fission"], "types": ["aqueous"], "ph": [0.0, 2.0], "steps_per_unit": 1, "D": {"actinide": 7.0, "fission": 6.5, "lanthanide": 0.2}, "sf_base": 16.0, "complexity": 46, "cost": 4, "solvent_loss": 9.0, "waste_factor": 2.2, "needs_organic": true, "diluent": ["xylene", "toluene", "kerosene", "dodecane"], "acid_tolerant": 0.95, "carbon": {"energy_kwh_l": 0.09, "reagent_kg_l": 0.025, "reagent_factor": 3.0, "residual_frac": 0.08}, "desc": "季铵盐或三辛胺通过阴离子交换机理萃取 UO2(NO3)3- 与 TcO4-，对阳离子型 Ln 基本不萃取", "steps": [["配有机相", "配制 0.1-0.5 M Aliquat 336/二甲苯，稀硝酸预平衡", "分液漏斗、量筒、试剂瓶", "20-30 min", "0.3 M Aliquat 336/二甲苯 200 mL，稀硝酸预平衡", "两相澄清、无乳化层"], ["萃取接触", "1-4 M 硝酸 + 高盐析剂下萃取 UO2(NO3)3- 与 TcO4-", "离心萃取器/混合澄清槽、恒流泵、流量计", "30-50 min", "1-4 M HNO3 料液 200 mL，加硝酸钠盐析剂约 20 g", "静置后界面清晰、乳化层 < 1 mm"], ["分相", "静置分相，胺类体系易乳化需延长静置", "分液漏斗、相分离器、离心分离机", "20-30 min", "无需补加试剂", "界面稳定、无明显夹带"], ["洗涤", "有机相用稀硝酸洗涤", "分液漏斗、恒流泵", "15-20 min", "0.1 M HNO3 约 80 mL", "洗涤液澄清无显色"], ["反萃", "用碳酸铵或高氯酸盐溶液反萃目标阴离子", "反萃段萃取器、恒流泵、产品接收瓶", "30-45 min", "0.5 M 碳酸铵 约 120 mL", "水相目标阴离子浓度峰出现后回落"], ["溶剂再生", "碱洗转游离胺型后回用", "碱洗槽、离心分离机", "40-50 min", "0.1 M NaOH 约 80 mL", "有机相转游离胺型、颜色恢复"]], "conditions": "0.1-0.5 M Aliquat 336，1-4 M HNO3，高盐析剂促进萃取", "recovery": "U/Tc 回收率 >98%，尤其适合 Tc-99 去除", "ref": "IUPAC SC-Database 胺类萃取常数; IAEA-NDS Tc-99 分离方法汇编"}, "tehdga_chrom": {"name": "TEHDGA/DTDGA 交换色谱 (Ln/An 互分)", "family": "色谱", "units": 5, "targets": ["actinide"], "types": ["aqueous"], "ph": [0.0, 2.0], "steps_per_unit": 1, "D": {"actinide": 9.0, "lanthanide": 1.0, "fission": 0.6}, "sf_base": 9.0, "complexity": 58, "cost": 8, "solvent_loss": 4.0, "waste_factor": 1.6, "needs_organic": false, "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.05, "reagent_kg_l": 0.02, "reagent_factor": 4.5, "residual_frac": 0.06}, "desc": "萃取色谱树脂 (TEHDGA 浸渍硅基载体)，酸性进料下吸附 An(III)+Ln(III)，梯度淋洗分离 Am/Cm", "steps": [["装柱", "将 TEHDGA 浸渍树脂湿法装入色谱柱并用稀硝酸平衡", "玻璃层析柱（Φ15×300 mm）、恒流泵、TEHDGA 浸渍树脂、PTFE 管路", "50-70 min", "0.5 M HNO3 约 100 mL 平衡", "流出液酸度与流入液一致、树脂床无气泡"], ["上柱吸附", "0.5-2 M 硝酸介质中上柱，An(III)+Ln(III) 共吸附", "恒流泵、进样阀、通风柜", "40-60 min", "料液 200 mL（0.5-2 M HNO3 介质）", "流出液 α 比活度降至本底即吸附完全"], ["梯度淋洗", "以 pH 梯度或 DTPA 淋洗液分步洗脱，实现 Am/Cm 分离", "梯度混合器、恒流泵、自动馏分收集器", "180-300 min", "pH 梯度淋洗液或 0.05 M DTPA 约 400 mL", "各元素淋洗峰分离、峰间谷值回落到本底"], ["检测分段", "逐段测 α 比活度与吸光度，合并目标峰", "α 谱仪取样装置、紫外-可见分光光度计、部分收集器", "60-90 min", "无试剂（取样检测）", "分段 α 谱无交叉污染、峰形对称"], ["柱体更换", "监测柱效衰减，树脂达辐照阈值后更换并按放射性固废处置", "剂量计、柱效测试装置、放射性固废桶", "30 min", "无需补加试剂", "柱效下降 > 20% 或剂量计累积超阈值即更换"]], "conditions": "0.5-2 M HNO3 上柱，pH 梯度或 DTPA 淋洗；柱效受辐照衰减影响", "recovery": "Am/Cm 分离因子 3-6，需多柱串联", "ref": "PNNL-19655 Sigma Team 报告; Horwitz et al. 萃取色谱树脂系列数据"}, "btphen_extract": {"name": "溶剂萃取 — BTBP / BTPhen (SANEX)", "family": "溶剂萃取", "units": 6, "targets": ["actinide"], "types": ["aqueous"], "ph": [0.0, 2.0], "steps_per_unit": 1, "D": {"actinide": 9.0, "lanthanide": 0.35, "fission": 0.4}, "sf_base": 120.0, "complexity": 58, "cost": 9, "solvent_loss": 8.0, "waste_factor": 2.0, "needs_organic": true, "diluent": ["octanol", "xylene", "toluene", "kerosene"], "acid_tolerant": 1.0, "carbon": {"energy_kwh_l": 0.1, "reagent_kg_l": 0.015, "reagent_factor": 8.0, "residual_frac": 0.08}, "desc": "软氮供体双三嗪配体，直接选择性萃取 An(III) 而几乎不萃 Ln(III)，SF(Eu/Am) 可达 100+", "steps": [["配有机相", "配制 10-20 mM CyMe4-BTPhen/辛醇，加相转移剂辅助动力学", "分液漏斗、量筒、试剂瓶、避光容器", "25-35 min", "15 mM CyMe4-BTPhen/辛醇 200 mL，加相转移剂约 2 mL", "有机相澄清、避光保存无变色"], ["萃取接触", "0.5-1 M 硝酸下选择性萃取 An(III)，Ln(III) 基本不萃", "离心萃取器、恒温振荡器、恒流泵", "40-60 min", "0.5-1 M HNO3 料液 200 mL，相比 1:1", "平衡后两相分离、界面无第三相"], ["分相", "静置分相，记录萃取动力学曲线", "分液漏斗、相分离器、分光光度计取样", "20-30 min", "无需补加试剂", "界面清晰、萃取动力学曲线走平（30 min 内 D 值不变）"], ["反萃", "用稀硝酸或草酸反萃回收 An", "分液漏斗、恒流泵、产品接收瓶", "25-40 min", "0.05 M HNO3 约 120 mL", "水相 An 浓度峰出现后回落至本底"], ["溶剂再生", "碱洗再生并检测三嗪配体降解产物", "碱洗槽、离心分离机、色谱检测仪", "50-70 min", "0.2 M Na2CO3 约 100 mL", "三嗪配体降解产物洗除、D 值复测偏差 < 5%"]], "conditions": "10-20 mM CyMe4-BTPhen / 辛醇，0.5-1 M HNO3，动力学需相转移剂辅助", "recovery": "Am 回收率 >99%，SF 全系最高", "ref": "RSC Chem. Sci. 2015, DOI 10.1039/C5SC01328C; National Science Open 2024, DOI 10.1360/nso/20240028"}, "membrane": {"name": "膜分离 (纳滤 / 支撑液膜)", "family": "膜分离", "units": 4, "targets": ["lanthanide", "actinide", "fission"], "types": ["aqueous", "organic"], "ph": [1.0, 9.0], "steps_per_unit": 1, "D": {"lanthanide": 2.2, "actinide": 2.4, "fission": 1.8}, "sf_base": 8.0, "complexity": 44, "cost": 6, "solvent_loss": 7.0, "waste_factor": 1.5, "needs_organic": false, "acid_tolerant": 0.6, "carbon": {"energy_kwh_l": 0.14, "reagent_kg_l": 0.005, "reagent_factor": 2.0, "residual_frac": 0.05}, "desc": "纳滤膜依据离子半径/水合能截留多价离子；支撑液膜耦合载体实现选择性迁移", "steps": [["膜组件安装", "安装纳滤膜/支撑液膜组件，通水测纯水通量确认无泄漏", "纳滤膜组件、支撑液膜池、高压泵、压力表、流量计", "30-45 min", "纯水约 500 mL 试压", "纯水通量稳定且无渗漏、压力保持 10 min 不降"], ["进料预处理", "料液经 0.45 μm 预过滤去除颗粒防膜污染", "预过滤装置、微孔滤膜、真空泵", "20-30 min", "0.45 μm 滤膜 1 张", "预过滤后料液无可见颗粒、滤膜无明显截留色"], ["加压分离", "在 5-20 bar 下循环进料，多价离子被截留于浓缩侧", "高压泵、压力调节阀、循环管路、恒温槽", "60-120 min", "料液 200 mL，循环 5-20 bar", "透过液流量稳定、截留率不再上升即达稳态"], ["取样分析", "定时取样测两侧离子浓度计算截留率", "取样阀、ICP-MS 取样管、电导率仪", "30-40 min", "无试剂（取样检测）", "两侧离子浓度差趋于稳定（连续 3 次取样偏差 < 5%）"], ["膜清洗", "用酸/碱清洗液反冲恢复通量", "清洗液储罐、反冲泵、通量测试装置", "40-60 min", "0.1 M NaOH 与 0.1 M HNO3 各约 200 mL", "通量恢复至初始值的 90% 以上"]], "conditions": "操作压力 5-20 bar，pH 与络合剂协同调控；需防膜污染与辐照脆化", "recovery": "多价/单价分离因子 5-20，适合末端浓缩减容", "ref": "National Science Open 2024 膜分离章节; IUPAC 水合离子半径数据"}, "electrodeposition": {"name": "电化学电沉积回收", "family": "电化学", "units": 4, "targets": ["actinide", "fission"], "types": ["aqueous"], "ph": [1.0, 4.0], "steps_per_unit": 1, "D": {"actinide": 4.0, "fission": 3.0, "lanthanide": 1.2}, "sf_base": 6.5, "complexity": 36, "cost": 4, "solvent_loss": 2.0, "waste_factor": 1.2, "needs_organic": false, "acid_tolerant": 0.8, "carbon": {"energy_kwh_l": 0.16, "reagent_kg_l": 0.02, "reagent_factor": 2.0, "residual_frac": 0.05}, "desc": "在草酸/硝酸体系中恒电位电沉积 Ln/An 于不锈钢或钽阴极，实现金属相回收", "steps": [["电解槽装配", "装入 0.05-0.5 M 草酸电解液，安装阴极（不锈钢/钽）与阳极并控温", "电解槽、恒温循环水浴、电极夹具、直流电源", "25-35 min", "0.1 M 草酸电解液 约 200 mL", "电极间距固定、温度稳定在 80-95 °C"], ["通氮除氧", "通高纯氮吹扫排除溶解氧与产生的氢氧混合气", "氮气钢瓶、减压阀、气体流量计、强制排风罩", "15-20 min", "高纯氮约 2-3 L（吹扫 15 min）", "溶解氧降至 < 0.1 ppm、排风口气体检测无氢积累"], ["恒电位沉积", "在 -1.8 至 -2.2 V (vs Ag/AgCl) 于 80-95 °C 恒电位沉积 Ln/An", "恒电位仪/直流电源、Ag/AgCl 参比电极、接触式温度计、氢浓度监测仪", "120-240 min", "电解至理论电量（约 1.5-3.0 Ah）", "电流降至初始值 10% 以下、阴极表面均匀覆盖不再增厚"], ["取出称重", "断电取出阴极，冲洗干燥后称量计算沉积率", "绝缘镊子、去离子水洗瓶、鼓风干燥箱、分析天平", "45-60 min", "去离子水约 50 mL 冲洗", "烘干后恒重、沉积层无脱落"], ["阴极剥离回收", "将沉积层剥离或整片保存作金属态回收", "剥离工具、样品盒、放射性固废袋", "20-30 min", "无需补加试剂", "沉积层完整剥离、阴极表面无残留"]], "conditions": "0.05-0.5 M 草酸，-1.8 至 -2.2 V vs Ag/AgCl，80-95 °C", "recovery": "沉积率 85-99%，可直接得到金属态，便于体积减容", "ref": "NEA-TDB 草酸盐相; IAEA-TECDOC 电解还原/电沉积方法汇编"}}, "WEIGHTS_DEFAULT": {"efficiency": 0.28, "complexity": 0.18, "solvent_loss": 0.16, "element_loss": 0.14, "safety": 0.14, "cost": 0.1}, "DIM_LABELS": {"efficiency": "分离效率", "complexity": "流程复杂度", "solvent_loss": "溶剂损失", "element_loss": "元素损失", "safety": "安全危险", "cost": "成本与废弃物"}, "GHS_INFO": {"H225": ["极易燃液体与蒸气", "high"], "H226": ["易燃液体与蒸气", "medium"], "H272": ["可能加剧燃烧，氧化剂", "high"], "H280": ["含高压气体，受热可能爆炸", "medium"], "H290": ["可能腐蚀金属", "low"], "H301": ["吞咽有毒", "high"], "H302": ["吞咽有害", "medium"], "H304": ["吞咽及进入呼吸道可能致命", "medium"], "H312": ["皮肤接触有害", "medium"], "H314": ["造成严重皮肤灼伤与眼损伤", "high"], "H315": ["造成皮肤刺激", "low"], "H318": ["造成严重眼损伤", "medium"], "H319": ["造成严重眼刺激", "low"], "H330": ["吸入致命", "high"], "H335": ["可能引起呼吸道刺激", "low"], "H336": ["可能引起嗜睡或眩晕", "medium"], "H350": ["可能致癌", "high"], "H361": ["可能对生育能力或胎儿造成伤害", "high"], "H411": ["对水生生物有毒且影响持久", "medium"]}, "SOURCES": [["OECD/NEA Thermochemical Database (TDB)", "Chemical Thermodynamics Series 第 1-16 卷，U/Np/Pu/Am/Tc/Th/La 系元素热力学与络合常数（推荐值，SIT 外推至 I=0）", "https://oecdnea.org/html/dbtdb"], ["ThermoChimie (Andra / NWS / ONDRAF-NIRAS)", "NEA-TDB 的扩展库，覆盖 Ln/An 与关键配体，pH 6-14、T<80 °C", "http://www.thermochimie-tdb.com/"], ["IUPAC Stability Constants Database (SC-Database)", "配体-金属逐级稳定常数，α-HIBA / DTPA / HEDTA / IDA 等", "https://www.acadsoft.co.uk/"], ["NIST Chemistry WebBook", "溶剂介电常数、偶极矩、沸点、闪点、ΔfH° 等物性", "https://webbook.nist.gov/"], ["CRC Handbook of Chemistry and Physics", "溶度积 (Ksp)、溶解度、密度、折射率等手册级数据", "https://hbcp.chemnetbase.com/"], ["Cambridge Structural Database (CSD) / CCDC", "f 区配合物晶体结构与配位几何（配位数、键长）", "https://www.ccdc.cam.ac.uk/"], ["LBNL / NuDat 2.8, ENSDF (NNDC-BNL)", "核素衰变数据：α 能量、γ 射线能量与分支比、半衰期", "https://www.nndc.bnl.gov/nudat3/"], ["IAEA Nuclear Data Services (NDS)", "核素与放射化学分离方法汇编、临界安全限值", "https://nds.iaea.org/"], ["GHS / UN Model Regulations (Rev.10)", "化学品危险分类与 H 码，用于溶剂危险度与防护判定", "https://unece.org/transport/dangerous-goods"]], "METHOD_REFS": [["PUREX / TBP", "Horwitz et al., Solvent Extr. Ion Exch.；IAEA-TECDOC 后处理工艺报告", "TBP 萃取 U(VI)/Pu(IV)/Th(IV) 分配比与级数"], ["TALSPEAK", "Nilsson & Nash, Solvent Extr. Ion Exch. 2007；Braley et al. 2012 (HEH[EHP]/HEDTA)", "Ln/An 互分，SF>100；改进体系动力学更快"], ["TRUEX", "Horwitz et al. 1985；PNNL-19655 (Sigma Team for Minor Actinide Separation)", "CMPO+TBP 共萃 TRU 与 Ln，Am/Cm 分离难点"], ["i-SANEX / TODGA", "Sasaki et al., Solvent Extr. Ion Exch. 2022, DOI 10.1080/01496395.2022.2080707", "TODGA-DTPA-LA-ED 体系，Am 反萃率 98.7%"], ["SANEX / BTBP / BTPhen", "RSC Chem. Sci. 2015, DOI 10.1039/C5SC01328C", "软氮供体选择性萃取 An(III)，SF(Eu/Am)>100"], ["亲水螯合剂综述", "National Science Open 2024, DOI 10.1360/nso/20240028", "亲水配体作为掩蔽/反萃剂的最新进展"], ["阳离子交换稀土分离", "IUPAC SC-Database 的 HIBA-Ln 逐级常数；NEA-TDB 稀土卷", "α-HIBA 梯度淋洗相邻稀土分离"], ["阴离子交换铀分离", "NEA-TDB Vol.5 铀硝酸根络合常数；ASTM C761", "高浓硝酸中 UO2(NO3)3- 吸附机理"], ["电沉积 / 电解还原", "NEA-TDB 草酸盐相；IAEA-TECDOC 电解方法汇编", "草酸体系中恒电位沉积 Ln/An"]], "PROCESS_REAGENT_HAZARDS": {"oxalate_precip": ["high", "草酸 (H314/H302)", "草酸固体与粉尘强烈腐蚀皮肤与眼，且与体钙结合致低血钙；配置区须通风、戴耐酸手套与护目镜，废液含草酸需单独中和"], "hydroxide_precip": ["high", "浓氨水 / NaOH (H314/H335)", "浓氨水挥发刺激呼吸道与眼，密闭投加并设局部排风；NaOH 强腐蚀，溅出需大量水冲洗"], "carbonate_precip": ["medium", "碳酸钠 / 碳酸铵 (H315/H319)", "粉尘刺激眼与呼吸道，投加时防扬尘；碳酸铵受热分解释放氨气"], "sulfide_step": ["high", "硫化钠 / H2S (H330/H314)", "加酸时释放 H2S 剧毒气体，必须配碱性尾气吸收塔与固定式 H2S 报警器，严禁密闭空间单人作业"], "cation_ix": ["medium", "α-HIBA 淋洗液 (H315/H319)", "有机酸淋洗液刺激皮肤与眼，长期接触需手套；树脂再生废液 COD 高需单独处理"], "anion_ix": ["high", "高浓硝酸 (H314/H272)", "上柱用 6-8 M 硝酸强腐蚀强氧化，树脂与硝酸接触会放热并产生 NOx，须控温与尾气处理"], "chelex": ["low", "Chelex-100 树脂 (H315)", "树脂本身低毒，主要是粉尘刺激；再生酸液需中和"], "purex_tbp": ["high", "30% TBP / 正十二烷 (H302/H312/H304)", "TBP 经辐解生成 DBP/MBP 会络合裂变产物造成去污困难；有机相与硝酸共存须防红油，设备需防爆与接地"], "hdehp_talspeak": ["high", "HDEHP / DTPA / 乳酸缓冲 (H315/H318/H335)", "HDEHP 显强酸性腐蚀，乳酸缓冲体系易滋生微生物并增加有机负荷；相分离慢导致有机相夹带损失"], "todga": ["high", "TODGA / 正十二烷 (H302/H304)", "TODGA 反萃需强络合剂，反萃不完全会使 Am 滞留有机相；稀释剂可燃，须惰性气氛"], "cmpo_truex": ["high", "CMPO / TBP 体系 (H315/H319/H304)", "CMPO 萃取能力强，易生成第三相导致运行失稳；含磷废液难焚烧处理，需专门固化"], "amine_extract": ["medium", "Aliquat 336 / 三辛胺 (H302/H315/H411)", "胺类对水生生物有毒且难降解；与亚硝酸盐接触可能生成致癌亚硝胺，须避开含亚硝酸体系"], "tehdga_chrom": ["medium", "TEHDGA 浸渍树脂 (H315/H319)", "树脂受辐照后配体降解导致柱效衰减，更换下的树脂属放射性固体废物"], "btphen_extract": ["medium", "BTBP / BTPhen / 辛醇 (H302/H318)", "三嗪配体合成成本高且生物毒性数据有限，按有害化学品管理；辛醇刺激眼"], "membrane": ["medium", "膜组件 / 高压泵 (H315)", "膜受辐照会脆化破裂造成交叉污染；高压操作有机械伤害风险，需设泄压保护"], "electrodeposition": ["high", "草酸电解液 / 高压电源 (H314/H272)", "电沉积产生氢气与氧气混合气，遇火有爆炸风险，电解槽须强制排风并监测氢浓度"]}, "PROCESS_AFFINITY": {"anion_ix": {"U": 2.6, "Th": 2.2, "Pu": 2.4, "Np": 2.0, "Tc": 1.9}, "purex_tbp": {"U": 2.8, "Pu": 2.6, "Th": 2.2, "Np": 2.0}, "hdehp_talspeak": {"Am": 1.6, "Cm": 1.5, "Eu": 1.5, "Nd": 1.4, "Sm": 1.4, "Dy": 1.3, "Lu": 1.3}, "todga": {"Am": 2.4, "Cm": 2.4, "Np": 1.8}, "cmpo_truex": {"Am": 2.4, "Cm": 2.4, "Pu": 2.2, "Np": 2.0}, "btphen_extract": {"Am": 3.0, "Cm": 2.6}, "tehdga_chrom": {"Am": 2.6, "Cm": 2.4}, "amine_extract": {"Tc": 2.6, "U": 1.7, "Pu": 1.4}, "chelex": {"Co": 3.0, "Sr": 1.2}, "cation_ix": {"Cs": 1.6, "Sr": 1.9, "La": 1.3, "Ce": 1.3, "Nd": 1.3, "Eu": 1.3}, "electrodeposition": {"U": 1.8, "Th": 1.7, "Np": 1.5, "Tc": 1.4}, "carbonate_precip": {"Sr": 1.6, "Cs": 0.8}, "hydroxide_precip": {"Cs": 0.5, "Sr": 1.1}}, "SOLVENT_ROLE": {"water": "aqueous", "hno3": "aqueous", "hcl": "aqueous", "h2so4": "aqueous", "tbp": "extractant", "dodecane": "diluent", "kerosene": "diluent", "hexane": "diluent", "toluene": "diluent", "xylene": "diluent", "octanol": "diluent", "etoac": "diluent", "il_bmim": "extractant", "sc_co2": "supercritical"}};
+const {ELEMENTS,SOLVENTS,IMPURITIES,PROCESSES,WEIGHTS_DEFAULT,DIM_LABELS,GHS_INFO,SOURCES,METHOD_REFS,PROCESS_REAGENT_HAZARDS,PROCESS_AFFINITY,SOLVENT_ROLE} = KB;
+const SF_TARGET=10;
+const DIM_ORDER=["efficiency","complexity","solvent_loss","element_loss","safety","cost"];
+
+let WEIGHTS={...WEIGHTS_DEFAULT};
+let SEL_ELEMS=new Set();
+let SEL_IMPS=new Set();
+
+const $=s=>document.querySelector(s);
+const clamp=(x,lo=0,hi=100)=>Math.max(lo,Math.min(hi,x));
+const mean=a=>{a=a.filter(x=>x!=null);return a.length?a.reduce((p,c)=>p+c,0)/a.length:null;};
+
+function fillSelects(){
+  for(let i=0;i<3;i++){
+    const sel=$("#s"+i);
+    sel.innerHTML='<option value="">— 无 —</option>';
+    for(const k in SOLVENTS){
+      const o=document.createElement("option");
+      o.value=k; o.textContent=SOLVENTS[k].name;
+      sel.appendChild(o);
+    }
+  }
+  $("#s0").value="hno3"; $("#s1").value="tbp"; $("#s2").value="dodecane";
+}
+
+function renderElems(){
+  const q=($("#eq").value||"").trim().toLowerCase();
+  const box=$("#elems");
+  const groups={actinide:"锕系（放射性）",fission:"裂变产物（放射性）",lanthanide:"稀土（镧系 + Y/Sc）"};
+  let html="";
+  for(const g in groups){
+    const ks=Object.keys(ELEMENTS).filter(k=>ELEMENTS[k].class===g);
+    const hit=ks.filter(k=>{
+      const e=ELEMENTS[k];
+      return !q || k.toLowerCase().includes(q) || e.name.includes(q);
+    });
+    if(!hit.length) continue;
+    html+=`<div style="font-size:11px;color:var(--txt3);margin:12px 0 7px;letter-spacing:.5px">${groups[g]}</div><div class="chips">`;
+    hit.forEach(k=>{
+      const e=ELEMENTS[k], on=SEL_ELEMS.has(k);
+      html+=`<span class="chip ${e.radioactive?'rad':''} ${on?'sel':''}" data-e="${k}" title="${e.name}｜${e.common_ox}+级｜r=${e.radius6}Å｜${e.pearson}酸｜${e.note}">${e.name} <span style="opacity:.55">${k}</span></span>`;
+    });
+    html+="</div>";
+  }
+  box.innerHTML=html||`<div style="color:var(--txt3);font-size:12px;padding:8px 0">无匹配元素</div>`;
+  box.querySelectorAll("[data-e]").forEach(el=>{
+    el.onclick=()=>{
+      const k=el.dataset.e;
+      SEL_ELEMS.has(k)?SEL_ELEMS.delete(k):SEL_ELEMS.add(k);
+      renderElems();
+    };
+  });
+  const ra=Object.keys(ELEMENTS).filter(k=>SEL_ELEMS.has(k)&&ELEMENTS[k].radioactive).length;
+  const pi=$("#pickinfo");
+  if(pi) pi.textContent=SEL_ELEMS.size?`已选 ${SEL_ELEMS.size} 种${ra?`（含 ${ra} 种放射性）`:""}`:"";
+}
+
+function renderImps(){
+  const box=$("#imps"); box.innerHTML="";
+  for(const k in IMPURITIES){
+    const im=IMPURITIES[k], on=SEL_IMPS.has(k);
+    const el=document.createElement("span");
+    el.className="chip"+(on?" sel":"");
+    el.textContent=im.name;
+    el.title=im.mechanism;
+    el.onclick=()=>{SEL_IMPS.has(k)?SEL_IMPS.delete(k):SEL_IMPS.add(k);renderImps();};
+    box.appendChild(el);
+  }
+}
+
+function renderWeights(){
+  const box=$("#weights"); box.innerHTML="";
+  DIM_ORDER.forEach(k=>{
+    const d=document.createElement("div"); d.className="slider";
+    d.innerHTML=`<div class="top"><span>${DIM_LABELS[k]}</span><b id="wv_${k}">${WEIGHTS[k].toFixed(2)}</b></div>
+      <input type="range" min="0" max="0.5" step="0.01" value="${WEIGHTS[k]}" id="ws_${k}">`;
+    box.appendChild(d);
+  });
+  DIM_ORDER.forEach(k=>{
+    $("#ws_"+k).oninput=e=>{
+      WEIGHTS[k]=parseFloat(e.target.value);
+      $("#wv_"+k).textContent=WEIGHTS[k].toFixed(2);
+      const s=DIM_ORDER.reduce((p,c)=>p+WEIGHTS[c],0)||1;
+      DIM_ORDER.forEach(j=>{$("#wv_"+j).textContent=(WEIGHTS[j]/s).toFixed(2);});
+    };
+  });
+}
+
+function normW(){
+  const s=DIM_ORDER.reduce((p,c)=>p+WEIGHTS[c],0)||1;
+  const w={}; DIM_ORDER.forEach(k=>w[k]=WEIGHTS[k]/s); return w;
+}
+
+/* ============ 引擎（与 Python 版算法一一对应） ============ */
+function solventProfile(solvents){
+  const total=solvents.reduce((p,s)=>p+s.volume,0)||1;
+  const aq=solvents.filter(s=>SOLVENT_ROLE[s.key]==="aqueous").reduce((p,s)=>p+s.volume,0);
+  const org=total-aq;
+  const eps=solvents.reduce((p,s)=>p+s.eps*s.volume,0)/total;
+  const pr={low:0.2,medium:0.6,high:1.0};
+  const polarity=solvents.reduce((p,s)=>p+pr[s.polarity]*s.volume,0)/total;
+  const acid=solvents.filter(s=>["hno3","hcl","h2so4"].includes(s.key)).reduce((p,s)=>p+s.volume,0)/total;
+  return {total_volume:total,aqueous_volume:aq,organic_volume:org,aqueous_frac:aq/total,
+    has_aqueous:aq>0,has_organic:org>0,biphasic:aq>0&&org>0,eps,
+    acidic:acid>=0.35,acidic_frac:acid,polarity,solvents};
+}
+
+function elementProfile(elements){
+  const classes={};
+  elements.forEach(e=>{(classes[e.class]=classes[e.class]||[]).push(e);});
+  const charges=elements.map(e=>e.common_ox), radii=elements.map(e=>e.radius6);
+  const pairs=[];
+  for(let i=0;i<elements.length;i++)for(let j=i+1;j<elements.length;j++){
+    const a=elements[i],b=elements[j];
+    pairs.push({a,b,dr:Math.abs(a.radius6-b.radius6),dox:Math.abs(a.common_ox-b.common_ox)});
+  }
+  pairs.sort((x,y)=>(x.dr+0.35*x.dox)-(y.dr+0.35*y.dox));
+  return {elements,classes,n:elements.length,
+    charge_spread:charges.length?Math.max(...charges)-Math.min(...charges):0,
+    radius_spread:radii.length?Math.max(...radii)-Math.min(...radii):0,
+    has_radioactive:elements.some(e=>e.radioactive),
+    max_shield:Math.max(0,...elements.map(e=>e.need_shield_mm)),
+    hardest_pair:pairs[0]||null};
+}
+
+function penKey(proc){
+  const f=proc.family;
+  if(f==="沉淀") return proc.name.includes("hydroxide")?"precip_oh":"precip_ox";
+  if(f==="预处理/沉淀") return "precip_oh";
+  if(f==="离子交换") return "ix";
+  if(f==="溶剂萃取") return "extraction";
+  if(f==="膜分离") return "membrane";
+  if(f==="电化学") return "extraction";
+  return "ix";
+}
+
+function dValue(elem,pk){
+  const proc=PROCESSES[pk];
+  const base=proc.D[elem.class]!=null?proc.D[elem.class]:0.05;
+  const cf=elem.common_ox/3;
+  const rf=1+(1-elem.radius6/1.10)*0.55;
+  const soft={hard:0.62,borderline:1.0,soft:1.5}[elem.pearson];
+  let d=base*(0.45+0.55*Math.min(cf,2.0))*rf*soft;
+  if(elem.common_ox<=2&&(proc.family==="沉淀"||proc.family==="预处理/沉淀")) d*=0.12;
+  if(elem.common_ox<=2&&proc.family==="溶剂萃取"&&pk!=="amine_extract") d*=0.35;
+  if(elem.common_ox>=3&&pk==="chelex") d*=0.3;
+  if(["Cs","Sr"].includes(elem.key)&&pk==="cation_ix") d*=0.5;
+  if(elem.key==="Cs"&&pk==="amine_extract") d*=0.25;
+  if(elem.key==="Cs"&&["hdehp_talspeak","todga","cmpo_truex","btphen_extract"].includes(pk)) d*=0.2;
+  if(elem.key==="Sr"&&["btphen_extract","tehdga_chrom"].includes(pk)) d*=0.3;
+  if(elem.key==="Sr"&&["oxalate_precip","carbonate_precip"].includes(pk)) d*=0.6;
+  return Math.max(d,1e-3);
+}
+
+function affinityBoost(pk,prof){
+  const t=PROCESS_AFFINITY[pk]; if(!t) return 1;
+  const hits=prof.elements.filter(e=>t[e.key]!=null).map(e=>t[e.key]);
+  if(!hits.length) return 1;
+  const all=hits.length===prof.elements.length;
+  return Math.pow(Math.max(...hits),all?1.25:0.75);
+}
+
+function feasibility(pk,prof,imp){
+  const proc=PROCESSES[pk]; const reasons=[]; const af=prof.aqueous_frac;
+  if(proc.family==="溶剂萃取"){
+    if(prof.organic_volume===0) return [false,["体系中没有有机相（萃取剂/稀释剂），无法构成液液萃取两相"]];
+    if(af<0.20) reasons.push("水相占比偏低，建议补加稀酸建立稳定的两相接触");
+  } else if(["离子交换","色谱","电化学","膜分离"].includes(proc.family)){
+    if(af<0.55) return [false,[`该工艺需要连续水相进料，当前水相仅占 ${(af*100).toFixed(0)}%`]];
+  } else if(proc.family==="沉淀"||proc.family==="预处理/沉淀"){
+    if(af<0.40) return [false,[`沉淀法需水相介质，当前水相仅占 ${(af*100).toFixed(0)}%，应先反萃或稀释进水相`]];
+  }
+  const has=Object.keys(prof.classes).some(t=>proc.targets.includes(t));
+  if(!has) return [false,["该工艺对所选元素类别无分离能力"]];
+  let pen=1; imp.forEach(im=>{pen*=1-(im.penalty[penKey(proc)]||0);});
+  if(pen<0.98) reasons.push(`杂质综合抑制系数 ${pen.toFixed(2)}`);
+  return [true,reasons];
+}
+
+function unitRecovery(elem,pk){
+  const d=dValue(elem,pk);
+  let rec;
+  if(d>=1) rec=100*(1-1/(10*(1+d)));
+  else rec=100*(1-1/(10*(1+d/0.35)));
+  return clamp(rec,35,99.6);
+}
+
+function sfBand(sf){
+  if(sf>=100) return 1;
+  if(sf>=10) return 0.80+0.20*(Math.log10(sf)-1);
+  if(sf>=3) return 0.45+0.35*(Math.log10(sf)-Math.log10(3))/(Math.log10(10)-Math.log10(3));
+  return clamp(0.45*sf/3,0,0.45);
+}
+
+function evaluate(pk,prof,imp){
+  const proc=PROCESSES[pk];
+  const targetElems=Object.values(prof.classes).flat();
+  const others=prof.elements.filter(e=>!targetElems.includes(e));
+  const interference=[];
+  if(others.length){
+    const dm=mean(targetElems.map(e=>dValue(e,pk)))||0.05;
+    others.forEach(e=>{const dO=dValue(e,pk);interference.push({elem:e,sf:dm/Math.max(dO,1e-3)});});
+  }
+  const interferers=interference.filter(x=>x.sf<SF_TARGET);
+  const sfMin=interference.length?Math.min(...interference.map(x=>x.sf)):proc.sf_base;
+  let sfEff=Math.min(sfMin,proc.sf_base);
+  const interceptors=interference.filter(x=>x.sf<3.0);
+
+  let pen=1; imp.forEach(im=>{pen*=1-(im.penalty[penKey(proc)]||0);});
+  sfEff*=(0.35+0.65*pen);
+  sfEff*=affinityBoost(pk,prof);
+  if(proc.acid_tolerant<0.8&&prof.acidic) sfEff*=0.55;
+  if(proc.acid_tolerant>=0.9&&!prof.acidic) sfEff*=0.7;
+  sfEff=Math.max(sfEff,1.02);
+
+  let stages=sfEff>=SF_TARGET?1:Math.max(1,Math.ceil(Math.log(100)/Math.log(Math.max(sfEff,1.02))));
+  stages=Math.min(stages,40);
+
+  let recovery=mean(targetElems.map(e=>unitRecovery(e,pk)))||50;
+  const rpen=0.35+0.65*pen;
+  let recoveryEff=clamp(recovery*rpen,30,99.5);
+
+  const hp=prof.hardest_pair; let selShort=0;
+  if(targetElems.length>=2){
+    const dv=targetElems.map(e=>dValue(e,pk));
+    const dmin=Math.min(...dv), dmax=Math.max(...dv);
+    const dFeat=dmin/Math.max(dmax,1e-3);
+    let gg=hp&&hp.dox===0 ? (0.55+0.45*dFeat) : 0.95;
+    if(proc.family==="沉淀"||proc.family==="预处理/沉淀") gg*=(0.5+0.5*Math.min(recoveryEff/100,1));
+    recoveryEff=clamp(recoveryEff*gg,25,99.5);
+    if(hp&&hp.dox===0){ selShort=Math.max(0,dFeat); if(hp.dr<0.06) selShort=Math.max(selShort,0.9); }
+  }
+  const elementLoss=100-recoveryEff;
+  let crossContam=false;
+  if(targetElems.length>=2){
+    const dv=targetElems.map(e=>dValue(e,pk));
+    const dmin=Math.min(...dv), dmax=Math.max(...dv);
+    crossContam=(dmax/Math.max(dmin,1e-3)<3.0)&&dmin>0.5;
+  }
+
+  let solLoss=proc.solvent_loss*(1+0.18*Math.max(0,stages-2));
+  if(prof.solvents.some(s=>["organic","ionic"].includes(s.type))&&proc.family!=="溶剂萃取") solLoss*=0.6;
+  solLoss=clamp(solLoss,0.5,60);
+
+  const eff=clamp(100*(0.42*sfBand(sfEff)+0.36*(recoveryEff/100)+0.22*(1-Math.min(stages,20)/20)));
+  const cx=clamp(100-proc.complexity-Math.max(0,stages-2)*2.5+(proc.units<=3?8:0));
+  const sol=clamp(100-solLoss*1.85-proc.waste_factor*3.0);
+  let ele=clamp(100-elementLoss*2.6-selShort*30);
+  if(crossContam) ele-=22; ele=clamp(ele);
+  const safe=clamp(100-hazardRaw(pk,prof,imp,elementLoss,solLoss));
+  const cost=clamp(100-proc.cost*7.0-proc.waste_factor*6.0-Math.max(0,stages-2)*1.5);
+
+  const reasons=[];
+  if(sfEff>=SF_TARGET) reasons.push(`分离因子 SF≈${sfEff.toFixed(1)}，单次接触即可达标`);
+  else if(sfEff>=3.0) reasons.push(`分离因子 SF≈${sfEff.toFixed(1)} 偏低，需 ${stages} 级串联才能达标`);
+  else reasons.push(`分离因子 SF≈${sfEff.toFixed(2)} 极低，需 ${stages} 级串联，属最难分离组合`);
+  if(interferers.length) reasons.push(`共存的 ${interferers.slice(0,4).map(x=>x.elem.name+"("+x.elem.key+")").join("、")} 会同步被处理，降低选择性`);
+  if(interceptors.length) reasons.push(`${interceptors.slice(0,3).map(x=>x.elem.name).join("、")} 与该工艺严重竞争，回收率会被显著拉低`);
+  if(pen<0.98) reasons.push(`杂质使有效分离因子降至原来的 ${(pen*100).toFixed(0)}%`);
+  if(stages>6) reasons.push(`级数达 ${stages} 级，设备与耗时成本显著上升`);
+  if(recoveryEff<85) reasons.push(`预期回收率仅 ${recoveryEff.toFixed(1)}%，元素损失偏高`);
+  if(hp&&targetElems.length>=2&&hp.dox===0&&hp.dr<0.06)
+    reasons.push(`${hp.a.name}/${hp.b.name} 离子半径仅差 ${(hp.dr*1000).toFixed(0)} pm 且同价态，是体系内最难分离对，需靠该工艺的固有选择性拉开`);
+  if(targetElems.length>=2&&new Set(targetElems.map(e=>e.class)).size>=2)
+    reasons.push("体系中同时存在锕系与镧系，须先做分组分离再做组内分离");
+
+  return {key:pk,name:proc.name,family:proc.family,units:proc.units,stages,sf:sfEff,sf_intrinsic:sfMin,
+    recovery:recoveryEff,element_loss:elementLoss,solvent_loss:solLoss,interferers,
+    scores:{efficiency:+eff.toFixed(1),complexity:+cx.toFixed(1),solvent_loss:+sol.toFixed(1),
+      element_loss:+ele.toFixed(1),safety:+safe.toFixed(1),cost:+cost.toFixed(1)},
+    reasons,desc:proc.desc,conditions:proc.conditions,recovery_text:proc.recovery,
+    ref:proc.ref,ph:proc.ph,needs_organic:!!proc.needs_organic};
+}
+
+function hazardRaw(pk,prof,imp,elementLoss,solLoss){
+  const proc=PROCESSES[pk]; let h=0;
+  prof.solvents.forEach(s=>{(s.ghs||[]).forEach(c=>{
+    const lv=(GHS_INFO[c]||["","low"])[1];
+    h+={high:11,medium:6,low:2.5}[lv];});});
+  if(prof.has_radioactive) h+=8;
+  if(proc.family==="溶剂萃取") h+=6;
+  if(proc.family==="电化学") h+=4;
+  imp.forEach(im=>{h+={high:14,medium:7,low:2}[im.danger[0]];});
+  if(prof.solvents.some(s=>s.key==="tbp")&&prof.has_radioactive) h+=8;
+  if(solLoss>8) h+=6;
+  if(elementLoss>10) h+=4;
+  if(prof.eps<3&&prof.solvents.some(s=>s.flash!=null&&s.flash<25)) h+=9;
+  return clamp(h,0,100);
+}
+
+function buildHazards(prof,imp,results){
+  const items=[]; let sc=0;
+  prof.solvents.forEach(s=>{
+    (s.ghs||[]).forEach(c=>{
+      const info=GHS_INFO[c]||[c,"low"];
+      items.push({level:info[1],cat:"化学",src:s.name,msg:`${c}: ${info[0]}`});
+      sc+={high:8,medium:4,low:1.5}[info[1]];
+    });
+    if(s.rad_stable<0.7){items.push({level:"medium",cat:"辐解",src:s.name,
+      msg:`辐射稳定性系数 ${s.rad_stable.toFixed(2)} 偏低，长期辐照会降解并改变萃取性能，需定期碱洗再生与更换`});sc+=5;}
+    if(s.flash!=null&&s.flash<30){items.push({level:"high",cat:"火灾",src:s.name,
+      msg:`闪点仅 ${s.flash.toFixed(0)} °C，与硝酸等氧化性介质共存时有燃烧风险，须惰性气氛与接地防静电`});sc+=9;}
+  });
+
+  const seen=new Set();
+  results.slice(0,3).forEach(r=>{
+    const info=PROCESS_REAGENT_HAZARDS[r.key];
+    if(info&&!seen.has(r.key)){
+      seen.add(r.key);
+      const [lv,src,msg]=info;
+      const tag=r===results[0]?`（推荐方案：${r.name}）`:`（候选：${r.name}）`;
+      items.push({level:lv,cat:"试剂/工艺",src:src+tag,msg});
+      sc+={high:9,medium:4.5,low:1.5}[lv];
+    }
+  });
+
+  if(prof.has_radioactive){
+    const rads=prof.elements.filter(e=>e.radioactive);
+    const al=rads.filter(e=>e.alpha>0), ga=rads.filter(e=>e.gamma>0), inn=rads.filter(e=>e.alpha===0&&e.gamma===0);
+    if(al.length){items.push({level:"high",cat:"辐射",src:al.map(e=>e.name).join("、"),
+      msg:"α 发射核素，内照射危害极强，必须在负压手套箱/热室内操作，全程 α 废物袋隔离"});sc+=12;}
+    if(ga.length){
+      const top=ga.reduce((a,b)=>b.gamma>a.gamma?b:a);
+      items.push({level:"high",cat:"辐射",src:ga.map(e=>e.name).join("、"),
+        msg:`${top.name} γ 能量 ${top.gamma.toFixed(3)} MeV，需约 ${top.need_shield_mm.toFixed(0)} mm 铅当量屏蔽，并做个人剂量计与区域监测`});sc+=12;}
+    if(inn.length){items.push({level:"medium",cat:"辐射",src:inn.map(e=>e.name).join("、"),
+      msg:"纯 β 发射核素，外照射可被有机玻璃屏蔽，但需严防经口/吸入摄入，操作区独立并做表面污染检测"});sc+=7;}
+    const fis=rads.filter(e=>e.critical_mass_kg);
+    if(fis.length){
+      const m=Math.min(...fis.map(e=>e.critical_mass_kg));
+      items.push({level:"high",cat:"临界安全",src:fis.map(e=>e.name).join("、"),
+        msg:`含易裂变核素，裸球最小临界质量约 ${m.toFixed(0)} kg；必须几何安全设计、控制单批质量与浓度，严禁容器内堆积`});sc+=14;}
+  }
+
+  imp.forEach(im=>{
+    items.push({level:im.danger[0],cat:"杂质",src:im.name,
+      msg:`${im.danger[1]}；干扰机理：${im.mechanism}`});
+    sc+={high:10,medium:5,low:1.5}[im.danger[0]];
+    if(im.key==="peroxide"){items.push({level:"high",cat:"工艺",src:im.name,
+      msg:"过氧化物与 TBP/煤油/甲苯等有机相接触可能剧烈放热甚至爆炸，必须先淬灭再过柱或萃取"});sc+=12;}
+    if(im.key==="oil"){items.push({level:"high",cat:"工艺",src:im.name,
+      msg:"有机物与高浓硝酸共存会生成不稳定的“红油”中间体，历史事故均为爆炸，必须严格控温并限量"});sc+=12;}
+    if(im.key==="sulfide"){items.push({level:"high",cat:"工艺",src:im.name,
+      msg:"酸化时释放 H2S，须先经碱性吸收塔处理尾气，作业区装 H2S 报警器"});sc+=10;}
+  });
+
+  if(results.some(r=>r.family==="溶剂萃取")){
+    items.push({level:"medium",cat:"工程",src:"溶剂萃取",
+      msg:"两相接触会因辐解与表面活性杂质产生界面污物与第三相，导致相分离恶化，需设界面污物排放与溶剂碱洗再生回路"});sc+=6;
+  }
+  if(prof.biphasic&&results.some(r=>r.family==="溶剂萃取")){
+    items.push({level:"medium",cat:"工程",src:"两相体系",
+      msg:"有机相体积损失会显著抬高成本与排放，建议加装活性炭或蒸馏回收单元"});sc+=4;
+  }
+
+  const level=sc>=55?"高":(sc>=28?"中":"低");
+  const rank={high:0,medium:1,low:2};
+  items.sort((a,b)=>rank[a.level]-rank[b.level]);
+  return {level,score:+clamp(sc,0,100).toFixed(1),items};
+}
+
+function recyclingVerdict(prof,imp,best){
+  const barriers=[];
+  if(prof.elements.some(e=>e.radioactive))
+    barriers.push("残留放射性核素需符合解控水平（依 GB 18871 / IAEA RS-G-1.7 豁免水平判定）");
+  imp.forEach(im=>{if(im.danger[0]==="high") barriers.push(`${im.name} 属高危杂质，必须先单独销毁或转化`);});
+  if(best&&best.recovery<95) barriers.push(`目标元素回收率 ${best.recovery.toFixed(1)}% 未达 95%，残液中仍含可观目标物`);
+  if(best&&best.solvent_loss>8) barriers.push(`溶剂损失 ${best.solvent_loss.toFixed(1)}% 偏高，需先做溶剂再生才可回用`);
+  if(prof.has_organic&&prof.elements.some(e=>e.radioactive))
+    barriers.push("有机相经辐照后会产生降解产物，回用前须碱洗并检测 D 值是否漂移");
+  let status,detail;
+  if(!barriers.length){status="可直接回用";detail="各指标满足回用阈值：元素残留、溶剂损失与危险等级均在可接受范围，经 0.22 μm 过滤后即可返回流程。";}
+  else if(barriers.length<=2){status="需净化后回用";detail="存在少量制约因素，建议按下列净化步骤处理后回用。";}
+  else {status="不建议直接回用";detail="制约因素较多，建议作为低放废液并入处理系统，或按危险废物分级处置。";}
+  return {status,barriers,detail};
+}
+
+function expandPlan(r,prof,imp){
+  const proc=PROCESSES[r.key]; const pk=penKey(proc);
+  const pre=[];
+  imp.forEach(im=>{if((im.penalty[pk]||0)>=0.2) pre.push(`${im.name}：${im.pretreat}`);});
+  const preU=[...new Set(pre)];
+  const main=[
+    `配制进料：将 ${prof.total_volume.toFixed(0)} mL 体系调节至 ${proc.ph[0]}-${proc.ph[1]} 区间（${proc.conditions}）`,
+    `主分离：${proc.desc}`,
+    `接触 ${r.stages} 级实现达标分离（分离因子 SF≈${r.sf.toFixed(1)}）`,
+    `洗涤与反萃：用稀酸或络合淋洗液将目标元素回收，预期回收率 ${r.recovery.toFixed(1)}%`];
+  if(proc.needs_organic) main.push("有机相再生：碱洗除界面污物后回用，监测 D 值漂移与辐解产物");
+  const post=[
+    "残余液检测：测 α/β/γ 活度与目标离子浓度，判断是否满足回用或解控",
+    "废液分流：按低放/中放分类收集，α 污染件单独包装"];
+  return {name:proc.name,family:proc.family,pre:preU,main,post,ref:proc.ref};
+}
+
+/* ============ 碳排放（工程估算，与 Python 版算法一致） ============ */
+const GRID_CO2=0.58, ORGANIC_DENSITY=0.8, ORGANIC_COMBUST_CO2=3.0;
+const AQUEOUS_INCIN_CO2=0.55, RAD_OVERHEAD=1.15;
+function incinerationBaseline(prof){
+  const aqL=prof.aqueous_volume/1000, orgL=prof.organic_volume/1000;
+  let c=orgL*ORGANIC_DENSITY*ORGANIC_COMBUST_CO2+aqL*AQUEOUS_INCIN_CO2;
+  if(prof.has_radioactive) c*=RAD_OVERHEAD;
+  return c;
+}
+function schemeCarbon(pk,prof,solLoss){
+  const c=PROCESSES[pk].carbon||{};
+  const vL=prof.total_volume/1000;
+  const energy=(c.energy_kwh_l!=null?c.energy_kwh_l:0.08)*vL*GRID_CO2;
+  const reagent=(c.reagent_kg_l!=null?c.reagent_kg_l:0.02)*vL*(c.reagent_factor!=null?c.reagent_factor:2.0);
+  const orgL=prof.organic_volume/1000;
+  const lost=orgL*Math.min(solLoss,60)/100*ORGANIC_DENSITY*ORGANIC_COMBUST_CO2;
+  const rf=c.residual_frac!=null?c.residual_frac:0.08;
+  const residual=rf*incinerationBaseline(prof)*0.9;
+  return {energy:+energy.toFixed(3),reagent:+reagent.toFixed(3),lost_solvent:+lost.toFixed(3),
+    residual:+residual.toFixed(3),total:+(energy+reagent+lost+residual).toFixed(3)};
+}
+function carbonTable(results,prof){
+  const base=incinerationBaseline(prof);
+  const rows=results.map(r=>{
+    const cb=schemeCarbon(r.key,prof,r.solvent_loss);
+    const red=base>0?(base-cb.total)/base*100:0;
+    return {name:r.name,family:r.family,total:r.total,carbon:cb.total,
+      reduction:+red.toFixed(1),detail:cb,is_best:r===results[0]};
+  });
+  return {baseline:+base.toFixed(3),rows};
+}
+
+function recommend(solKeys,vols,eleKeys,impKeys){
+  const weights=normW();
+  const solvents=solKeys.map((k,i)=>({...SOLVENTS[k],key:k,volume:+vols[i]})).filter(s=>s.volume>0);
+  const elements=eleKeys.map(k=>({...ELEMENTS[k],key:k}));
+  const impurities=impKeys.map(k=>IMPURITIES[k]);
+  const prof={...solventProfile(solvents),...elementProfile(elements)};
+  const candidates=[],rejected=[];
+  for(const pk in PROCESSES){
+    const [ok,why]=feasibility(pk,prof,impurities);
+    ok?candidates.push(pk):rejected.push({key:pk,name:PROCESSES[pk].name,why});
+  }
+  let results=candidates.map(pk=>evaluate(pk,prof,impurities));
+  results.forEach(r=>{r.total=+DIM_ORDER.reduce((p,k)=>p+r.scores[k]*weights[k],0).toFixed(1);});
+  results.sort((a,b)=>b.total-a.total);
+  const hazards=buildHazards(prof,impurities,results);
+  if(!results.length) return {prof,impurities,results:[],rejected,hazards,weights,plan:null,altResult:null,
+    altPlan:null,recycling:recyclingVerdict(prof,impurities,null),carbon:carbonTable([],prof)};
+  const best=results[0];
+  let altSel=null;
+  for(const r of results.slice(1)){if(r.family!==best.family||Math.abs(r.total-best.total)>=3){altSel=r;break;}}
+  if(!altSel&&results.length>1) altSel=results[1];
+  return {prof,impurities,results,rejected,hazards,weights,
+    plan:expandPlan(best,prof,impurities),
+    altResult:altSel, altPlan:altSel?expandPlan(altSel,prof,impurities):null,
+    recycling:recyclingVerdict(prof,impurities,best),
+    carbon:carbonTable(results,prof)};
+}
+
+/* ============ 渲染 ============ */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const scColor=v=>v>=80?"var(--grn)":(v>=55?"var(--acc2)":(v>=35?"var(--org)":"var(--red)"));
+const hazClass=l=>({high:"H",medium:"M",low:"L","高":"H","中":"M","低":"L"}[l]||"L");
+const hazTxt=l=>({high:"高",medium:"中",low:"低","高":"高","中":"中","低":"低"}[l]||l);
+const rcClass=s=>s==="可直接回用"?"ok":(s==="需净化后回用"?"mid":"bad");
+
+/* ============ 立体柱状图（纯 SVG，带 XY 轴 / 刻度 / 图例） ============ */
+function shade(hex,k){
+  const n=parseInt(hex.slice(1),16);
+  const r=Math.round(((n>>16)&255)*k), g=Math.round(((n>>8)&255)*k), b=Math.round((n&255)*k);
+  return `rgb(${Math.min(255,r)},${Math.min(255,g)},${Math.min(255,b)})`;
+}
+function niceMax(v){
+  if(v<=0) return 1;
+  const p=Math.pow(10,Math.floor(Math.log10(v)));
+  const m=v/p;
+  const s=m<=1?1:(m<=2?2:(m<=2.5?2.5:(m<=5?5:10)));
+  return s*p;
+}
+function gridBars(rows,nx,ny,d,l){
+  return rows.map(r=>{
+    const H=Math.max(1,r.h);
+    return `<g class="bar-g">
+      <polygon points="${r.xo},${r.yo-H} ${r.xo+nx},${r.yo-H} ${r.xo+nx+nx*l},${r.yo-H-ny*l} ${r.xo+nx*l},${r.yo-H-ny*l}" fill="${shade(r.color,1.18)}"/>
+      <polygon points="${r.xo+nx},${r.yo-H} ${r.xo+nx+nx*l},${r.yo-H-ny*l} ${r.xo+nx+nx*l},${r.yo-ny*l} ${r.xo+nx},${r.yo}" fill="${shade(r.color,0.74)}"/>
+      <rect class="front" x="${r.xo}" y="${r.yo-H}" width="${nx}" height="${H}" fill="${r.color}"/>
+      <title>${esc(r.full||r.label)}：${r.v.toFixed(2)}</title>
+    </g>`;
+  }).join("");
+}
+function chart3d(rows,opts){
+  const o=opts||{};
+  const yUnit=o.yUnit||"kg CO2e";
+  const W=880,H=440, mL=82,mR=34,mT=36,mB=104;
+  const px=W-mL-mR, py=H-mT-mB;
+  const n=Math.max(rows.length,1);
+  const band=px/Math.max(n,5);
+  const nx=Math.min(0.62*band,62), ny=Math.min(0.30*band,24);
+  const D=ny*0.34;
+  const base=H-mB;
+  const maxV=niceMax(Math.max(...rows.map(r=>r.v),0.0001)*(o.headroom||1.18));
+  const step=maxV/5;
+  const Y=v=>base-(v/maxV)*py;
+  const xOff=mL+D*0.7, yOff=base-ny*0.45;
+
+  let ticks="";
+  for(let i=0;i<=5;i++){
+    const v=step*i, y=Y(v);
+    ticks+=`<line x1="${mL}" y1="${y.toFixed(1)}" x2="${W-mR}" y2="${y.toFixed(1)}" stroke="#eceff3" stroke-width="1"/>`;
+    ticks+=`<text x="${mL-9}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="10.5" fill="#8b95a3">${v<10?v.toFixed(2):v.toFixed(1)}</text>`;
+  }
+  const axes=`<line x1="${mL}" y1="${base}" x2="${mL}" y2="${mT-6}" stroke="#5a6572" stroke-width="1.3"/>
+    <line x1="${mL}" y1="${base}" x2="${W-mR}" y2="${base}" stroke="#5a6572" stroke-width="1.3"/>
+    <polygon points="${mL},${mT-13} ${mL-3.8},${mT-2} ${mL+3.8},${mT-2}" fill="#5a6572"/>
+    <polygon points="${W-mR+7},${base} ${W-mR-4},${base-3.8} ${W-mR-4},${base+3.8}" fill="#5a6572"/>
+    <text x="${mL-64}" y="${mT-10}" font-size="11" fill="#5a6572">${esc(yUnit)}</text>`;
+
+  const bars=rows.map((r,i)=>({
+    v:r.v, h:(r.v/maxV)*py, color:r.color, label:r.label, full:r.full||r.label,
+    tag:r.tag, xo:xOff+(i+0.5)*band-nx/2, yo:yOff
+  }));
+  const body=gridBars(bars,nx,ny,0.34,0.36);
+
+  const xlabels=bars.map((b,i)=>{
+    const cx=b.xo+nx/2;
+    const raw=b.label, txt=raw.length>7?raw.slice(0,7)+"…":raw;
+    return `<text x="${cx.toFixed(1)}" y="${(base+18).toFixed(1)}" text-anchor="end"
+      font-size="11" fill="#5a6572" transform="rotate(-34 ${cx.toFixed(1)} ${(base+18).toFixed(1)})">${esc(txt)}<title>${esc(b.full)}</title></text>`;
+  }).join("");
+
+  const vals=bars.map(b=>{
+    const cx=b.xo+nx/2+D*0.5;
+    const y=Y(b.v)-ny*0.36-7;
+    const tag=b.tag!=null?` <tspan fill="#1e7d4f" font-weight="700">↓${b.tag}%</tspan>`:"";
+    return `<text x="${cx.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="10.5"
+      fill="#3c4653" class="bval">${b.v.toFixed(2)}${tag}</text>`;
+  }).join("");
+
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="各方案碳排放立体柱状图">
+    ${ticks}${body}${axes}${xlabels}${vals}
+    <text x="${((W-mR+mL)/2).toFixed(0)}" y="${H-6}" text-anchor="middle" font-size="11" fill="#8b95a3">方案 / 处置方式</text>
+  </svg>`;
+}
+function chartLegend(items){
+  return `<div class="legend">${items.map(it=>
+    `<span class="li"><span class="sw" style="background:${it.color}"></span>${esc(it.name)}</span>`).join("")}</div>`;
+}
+
+function planCard(r,plan,isBest){
+  const proc=PROCESSES[r.key];
+  const dims=DIM_ORDER.map(k=>`
+    <div class="dim"><span class="dn">${DIM_LABELS[k]}</span>
+      <span class="bar"><span class="fill" style="width:${r.scores[k]}%;background:${scColor(r.scores[k])}"></span></span>
+      <span class="dv">${r.scores[k].toFixed(1)}</span></div>`).join("");
+
+  const rawSteps=(proc.steps&&proc.steps.length)?proc.steps:[];
+  const prep=plan.pre.map((s,i)=>["前置除杂 "+(i+1), s, "见杂质预处理说明", "视杂质而定", "按杂质含量投加", "杂质沉淀完全、上清液澄清即停止"]);
+  const allSteps=[...prep,...rawSteps];
+  const stepHtml=allSteps.map((s,i)=>`
+    <div class="s3step">
+      <div class="s3no">${i+1}</div>
+      <div class="s3body">
+        <div class="s3nm">${esc(s[0])}<span class="s3tm">${esc(s[3])}</span></div>
+        <div class="s3act">${esc(s[1])}</div>
+        <div class="s3io">
+          <div class="s3io-r"><i>用量</i><b>${esc(s[4]||"—")}</b></div>
+          <div class="s3io-r"><i>终点现象</i><span>${esc(s[5]||"—")}</span></div>
+          <div class="s3io-r"><i>器材</i><span>${esc(s[2])}</span></div>
+        </div>
+      </div>
+    </div>`).join("");
+
+  const reasonTxt=[
+    ...r.reasons.slice(0,3),
+    `工艺机理：${r.desc}`,
+    `操作条件：${r.conditions}；文献预期水平 ${r.recovery_text}。`
+  ].join("；").replace(/；$/, "。");
+
+  const prepBlock=plan.pre.length?`<div class="s3pre"><i>前置除杂</i>${plan.pre.map(esc).join("；")}</div>`:"";
+
+  return `<div class="plan ${isBest?"best":"alt"}">
+    <div class="hero">
+      <div class="hero-tag">${isBest?"★ 最佳分离方案":"◇ 备选分离方案"}</div>
+      <h2 class="hero-name">${esc(r.name)}</h2>
+      <div class="hero-meta">${esc(r.family)} ｜ 操作单元 ${r.units} ｜ 串联级数 ${r.stages} ｜ pH ${proc.ph[0]}–${proc.ph[1]} ｜ 综合得分 <b>${r.total}</b>/100</div>
+    </div>
+
+    <div class="s3box">
+      <div class="s3title">方案流程<span class="s3sub">共 ${allSteps.length} 步，含用量、终点现象与耗时</span></div>
+      <div class="s3basis">以下以 <b>200 mL</b> 溶液为例，用量按此基准给出；实际操作请按体系体积等比例换算。终点现象为判断“何时停止加入”的依据。</div>
+      ${prepBlock}
+      <div class="s3steps">${stepHtml}</div>
+    </div>
+
+    <div class="s3box">
+      <div class="s3title">关键指标</div>
+      <div class="kpi s3kpi">
+        <div class="k"><div class="t">目标元素回收率</div><div class="v">${r.recovery.toFixed(1)}<span class="u">%</span></div></div>
+        <div class="k"><div class="t">元素损失</div><div class="v">${r.element_loss.toFixed(1)}<span class="u">%</span></div></div>
+        <div class="k"><div class="t">溶剂损失</div><div class="v">${r.solvent_loss.toFixed(1)}<span class="u">%</span></div></div>
+        <div class="k"><div class="t">分离因子 SF</div><div class="v">${r.sf.toFixed(1)}</div></div>
+        <div class="k"><div class="t">串联级数</div><div class="v">${r.stages}</div></div>
+        <div class="k"><div class="t">工艺约束</div><div class="v sm">${r.stages>5?"级数偏高":(r.recovery<85?"回收率受限":"常规可实施")}</div></div>
+      </div>
+      <div class="dims s3dims">${dims}</div>
+    </div>
+
+    <div class="s3box">
+      <div class="s3title">理由与原理</div>
+      <p class="s3para">${esc(reasonTxt)}</p>
+      <div class="s3ref">方法来源：${esc(r.ref)}</div>
+    </div>
+  </div>`;
+}
+
+function pgFoot(items){
+  return `<div class="pgfoot"><div class="ft">数据与文献引用</div>${
+    items.map(x=>`<div class="fi">· ${x}</div>`).join("")}</div>`;
+}
+
+function render(res){
+  const p=res.prof;
+  const solTxt=p.solvents.map(s=>`${s.name} ${s.volume.toFixed(0)} mL`).join(" ／ ");
+  const eleTxt=p.elements.map(e=>`${e.name}(${e.key})`).join("、");
+  const impTxt=res.impurities.length?res.impurities.map(i=>i.name).join("、"):"无";
+
+  const pages=[];
+
+  const overview=`<div class="card">
+    <h2>输入体系概览</h2>
+    <div class="kpi" style="margin-bottom:0">
+      <div class="k"><div class="t">总体积</div><div class="v">${p.total_volume.toFixed(0)} mL</div></div>
+      <div class="k"><div class="t">水相占比</div><div class="v">${(p.aqueous_frac*100).toFixed(0)}%</div></div>
+      <div class="k"><div class="t">估算介电常数</div><div class="v">${p.eps.toFixed(1)}</div></div>
+      <div class="k"><div class="t">元素 / 杂质</div><div class="v sm">${p.n} / ${res.impurities.length}</div></div>
+      <div class="k"><div class="t">候选工艺</div><div class="v">${res.results.length}</div></div>
+      <div class="k"><div class="t">已排除</div><div class="v">${res.rejected.length}</div></div>
+    </div>
+    <div class="sec"><ul class="rl">
+      <li>溶剂：${esc(solTxt)}</li><li>元素：${esc(eleTxt)}</li><li>杂质：${esc(impTxt)}</li>
+    </ul></div>
+    ${res.rejected.length?`<div class="sec"><div class="st"><span class="dot"></span>因体系不兼容被排除的工艺</div>
+      <ul class="rl">${res.rejected.slice(0,10).map(x=>`<li><b style="color:var(--txt)">${esc(x.name)}</b> — ${esc(x.why[0])}</li>`).join("")}</ul></div>`:""}
+  </div>`;
+
+  $("#rsub").textContent=`${solTxt} ｜ ${eleTxt} ｜ 杂质：${impTxt}`;
+
+  if(!res.results.length){
+    pages.push({title:"无可行工艺",sub:"体系参数不兼容",html:`<div class="card"><div class="empty"><div class="big">✕</div>
+      <div>当前体系无任何可行工艺</div>
+      <div style="font-size:12px;margin-top:8px">请调整溶剂配比（例如补加水相或有机相）后重试</div></div></div>`
+      +overview});
+    paint(pages); return;
+  }
+
+  const best=res.results[0], alt=res.altResult;
+
+  const h=res.hazards;
+  const hi=h.items.filter(it=>it.level==="high");
+  const rest=h.items.filter(it=>it.level!=="high");
+  pages.push({title:"风险警告",sub:`综合危险等级 ${hazTxt(h.level)} ｜ 风险指数 ${h.score}/100`,
+    html:`<div class="card"><h2>潜在危险评估</h2>
+    <div class="hz ${hazClass(h.level)}"><div class="lvl">${hazTxt(h.level)}</div>
+      <div class="txt">综合危险等级 <b>${hazTxt(h.level)}</b>　风险指数 <b>${h.score}</b>/100<br>
+      共识别 <b>${h.items.length}</b> 条风险项，其中高风险 <b>${hi.length}</b> 条</div></div>
+    ${hi.length?hi.map(it=>`<div class="hitem ${it.level}">
+      <span class="badge ${it.level}">${hazTxt(it.level)}</span>
+      <span class="badge cat">${esc(it.cat)}</span>
+      <div><div class="ht">${esc(it.src)}</div><div class="hm">${esc(it.msg)}</div></div>
+    </div>`).join(""):`<div class="hint" style="margin:0">未识别到高风险项，全部为中低风险。</div>`}
+    ${rest.length?`<details class="hazfold"><summary>另有 ${rest.length} 条中低风险（点击展开）</summary>
+      <div class="hazfold-body">${rest.map(it=>`<div class="hitem ${it.level}">
+        <span class="badge ${it.level}">${hazTxt(it.level)}</span>
+        <span class="badge cat">${esc(it.cat)}</span>
+        <div><div class="ht">${esc(it.src)}</div><div class="hm">${esc(it.msg)}</div></div>
+      </div>`).join("")}</div></details>`:""}
+  </div>
+  <div class="card"><h2>余液可回收 / 回用判定</h2>
+    <div class="rc ${rcClass(res.recycling.status)}"><div class="st">${esc(res.recycling.status)}</div>
+      <div style="font-size:12.5px;color:var(--txt2)">${esc(res.recycling.detail)}</div></div>
+    ${res.recycling.barriers.length?`<div class="sec"><div class="st"><span class="dot"></span>制约因素</div>
+      <ul class="rl">${res.recycling.barriers.map(b=>`<li>${esc(b)}</li>`).join("")}</ul></div>`:""}
+  </div>`
+    +pgFoot(["危险分级对照 GHS（UN Model Regulations Rev.10）H 码；试剂危害取自各物质 SDS 与 GHS 分类。",
+             "核素衰变数据（α 能量、γ 能量与分支比、半衰期）取自 NNDC NuDat 与 ENSDF；屏蔽厚度为铅当量估算值。",
+             "临界安全限值参考 IAEA 核临界安全标准与 IAEA-NDS 数据。",
+             "解控水平判定依据 GB 18871 与 IAEA RS-G-1.7 豁免水平。"])});
+
+  pages.push({title:"分离方案 · 最佳",sub:`${best.name}`,
+    html:planCard(best,res.plan,true)
+      +pgFoot([`工艺方法文献：${esc(best.ref)}`,
+               "分配比 D 与分离因子 SF 由内置物理引擎按离子电荷、半径、软硬酸碱与溶剂介电常数推算，基准值取自 OECD/NEA-TDB 与 IUPAC SC-Database 推荐区间。"])});
+
+  if(alt){
+    pages.push({title:"分离方案 · 备选",sub:`${alt.name}`,
+      html:planCard(alt,res.altPlan,false)
+        +pgFoot([`工艺方法文献：${esc(alt.ref)}`,
+                 "备选方案与最佳方案分属不同工艺族，可作为冗余路线或分段组合使用。"])});
+  }
+
+  if(res.results.length>2){
+    pages.push({title:"候选方案全排序",sub:`共 ${res.results.length} 个可行工艺`,
+      html:`<div class="card"><h2>全部候选方案排序</h2>
+      <div class="hint">六维加权总分由输入页设置的权重决定，可返回调整后重新生成</div>
+      <table class="src cb"><thead><tr><th>#</th><th>工艺</th><th>族</th><th>总分</th><th>SF</th><th>回收率</th><th>级数</th><th>溶剂损失</th><th>元素损失</th><th>风险</th></tr></thead><tbody>
+      ${res.results.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${esc(r.family)}</td>
+        <td style="color:${scColor(r.total)};font-weight:600">${r.total}</td>
+        <td>${r.sf.toFixed(1)}</td><td>${r.recovery.toFixed(1)}%</td>
+        <td>${r.stages}</td><td>${r.solvent_loss.toFixed(1)}%</td><td>${r.element_loss.toFixed(1)}%</td>
+        <td>${(100-r.scores.safety).toFixed(0)}</td></tr>`).join("")}
+      </tbody></table></div>`
+        +pgFoot(["总分 = 分离效率×权重 + 流程复杂度×权重 + 溶剂损失×权重 + 元素损失×权重 + 安全危险×权重 + 成本与废弃物×权重（权重已在生成时归一化）。",
+                 "SF 为有效分离因子，已叠加杂质抑制系数、工艺固有选择性与体系酸碱度修正。"])});
+  }
+
+  const cb=res.carbon;
+  if(cb&&cb.rows.length){
+    const maxRows=cb.rows.slice(0,8);
+    const bars=[
+      {label:"直接焚烧",full:"直接焚烧（基准）",v:cb.baseline,color:"#b03a2e"},
+      ...maxRows.map(r=>({label:r.name,full:r.name+(r.is_best?"（最佳方案）":""),v:r.carbon,
+        color:r.is_best?"#1e7d4f":"#1d6fb8",tag:r.reduction}))
+    ];
+    pages.push({title:"碳排放对比",sub:`直接焚烧基准 ${cb.baseline.toFixed(2)} kg CO2e`,
+      html:`<div class="card"><h2>各方案碳排放对比（立体柱状图）</h2>
+      <div class="hint">纵轴为碳排放量（kg CO2e），横轴为方案 / 处置方式；绿色标注为该方案相对直接焚烧的降低百分比。鼠标悬停可高亮柱体并查看完整名称与数值。</div>
+      <div class="chart3d">${chart3d(bars,{yUnit:"kg CO2e"})
+        +chartLegend([{name:"直接焚烧基准",color:"#b03a2e"},{name:"最佳分离方案",color:"#1e7d4f"},{name:"其他候选方案",color:"#1d6fb8"}])}</div>
+    </div>
+    <div class="card"><h2>碳排放对比明细表</h2>
+    <div class="kpi cbkpi">
+      <div class="k"><div class="t">直接焚烧基准</div><div class="v">${cb.baseline.toFixed(2)} <span class="u">kg CO2e</span></div></div>
+      <div class="k"><div class="t">最佳方案排放</div><div class="v">${cb.rows[0].carbon.toFixed(2)} <span class="u">kg CO2e</span></div></div>
+      <div class="k"><div class="t">最佳方案较焚烧降低</div><div class="v" style="color:${cb.rows[0].reduction>0?"var(--grn)":"var(--red)"}">${cb.rows[0].reduction>0?"↓ ":""}${cb.rows[0].reduction.toFixed(1)}%</div></div>
+    </div>
+    <table class="src cb"><thead><tr><th>方案</th><th>碳排放 (kg CO2e)</th><th>较直接焚烧降低</th><th>构成：电力 / 试剂 / 损失溶剂 / 残液</th></tr></thead><tbody>
+      <tr class="baserow"><td>直接焚烧（基准）</td><td>${cb.baseline.toFixed(2)}</td><td>—</td>
+        <td>有机相燃烧 + 水相辅助燃料${p.has_radioactive?" + 放射性处置附加 15%":""}</td></tr>
+      ${maxRows.map(r=>`<tr><td>${r.is_best?"★ ":""}${esc(r.name)}</td><td>${r.carbon.toFixed(2)}</td>
+        <td style="color:${r.reduction>0?"var(--grn)":"var(--red)"};font-weight:600">${r.reduction>0?"↓ "+r.reduction.toFixed(1)+"%":r.reduction.toFixed(1)+"%"}</td>
+        <td>${r.detail.energy.toFixed(2)} / ${r.detail.reagent.toFixed(2)} / ${r.detail.lost_solvent.toFixed(2)} / ${r.detail.residual.toFixed(2)}</td></tr>`).join("")}
+    </tbody></table>
+    <div class="hint" style="margin:12px 0 0">口径：电力 0.58 kgCO2e/kWh；有机溶剂焚烧 3.0 kgCO2e/kg（密度 0.8 kg/L）；水相焚烧辅助燃料 0.55 kgCO2e/L；放射性处置附加 15%；试剂按生产过程排放因子计。碳排量为工程估算值，用于方案间相对比较，不作为碳核算依据。</div>
+    </div>`
+      +pgFoot(["柱高按各方案碳排放量等比绘制，纵轴上限经取整放大（nice-number）以便读数。",
+               "电力排放因子取中国电网平均 0.58 kgCO2e/kWh；有机溶剂焚烧按完全燃烧化学计量折算约 3.0 kgCO2e/kg；水相危废焚烧按辅助燃料消耗折算 0.55 kgCO2e/L。",
+               "放射性废物处置附加 15% 为工程经验修正，非标准核算值。"])});
+  }
+
+  pages.push({title:"参考文献汇总",sub:"数据来源与方法文献",
+    html:`<div class="card"><h2>数据来源说明</h2>
+    <table class="src"><thead><tr><th>数据库 / 机构</th><th>用途</th><th>链接</th></tr></thead><tbody>
+    ${SOURCES.map(s=>`<tr><td>${esc(s[0])}</td><td>${esc(s[1])}</td>
+      <td><a href="${esc(s[2])}" target="_blank" rel="noopener">${esc(s[2])}</a></td></tr>`).join("")}
+    </tbody></table></div>
+  <div class="card"><h2>分离方法来源说明</h2>
+    <table class="src"><thead><tr><th>方法 / 体系</th><th>文献来源</th><th>要点</th></tr></thead><tbody>
+    ${METHOD_REFS.map(m=>`<tr><td>${esc(m[0])}</td><td>${esc(m[1])}</td><td>${esc(m[2])}</td></tr>`).join("")}
+    </tbody></table></div>
+  <div class="card"><h2>模型方法与局限</h2>
+    <div class="sec"><ul class="rl">
+      <li>分配比 D、分离因子 SF、串联级数由内置物理引擎按离子电荷、离子半径、软硬酸碱、溶剂极性与介电常数推算，并叠加杂质抑制系数与工艺固有选择性系数。</li>
+      <li>各工艺的基准 D 值、SF 范围与溶剂损耗率取自上述文献与数据库的推荐值区间，<b>非实测值</b>；实际工程须以实验测定 D 值为准。</li>
+      <li>危险分级对照 GHS（UN Model Regulations Rev.10）H 码与核素衰变数据，屏蔽厚度为铅当量估算值。</li>
+      <li>碳排放为工程估算值，用于方案间相对比较，不作为碳核算依据。</li>
+      <li>本工具为方案预筛选辅助工具，<b>不替代</b>实验室小试验证、辐射安全评估与合规审批。</li>
+    </ul></div></div>`
+      +pgFoot(["以上引用为该模型全部数据与方法来源，末页汇总用于便于复核与溯源。"])});
+
+  paint(pages);
+}
+
+/* ============ 翻页 ============ */
+let PAGES=[], CUR=0;
+function paint(pages){
+  PAGES=pages; CUR=0;
+  $("#pages").innerHTML=pages.map((pg,i)=>
+    `<div class="page ${i===0?"on":""}" data-i="${i}">${pg.html}</div>`).join("");
+  document.body.classList.add("result");
+  syncPager();
+  window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"});
+}
+function show(i){
+  if(i<0||i>=PAGES.length) return;
+  CUR=i;
+  document.querySelectorAll("#pages .page").forEach(el=>el.classList.toggle("on",+el.dataset.i===i));
+  syncPager();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function syncPager(){
+  const pg=PAGES[CUR]||{title:"",sub:""};
+  $("#ptitle").textContent=pg.title;
+  $("#psub").textContent=pg.sub||"";
+  $("#pgind").textContent=`第 ${CUR+1} / ${PAGES.length} 页`;
+  $("#pnum2").textContent=`第 ${CUR+1} / ${PAGES.length} 页　${pg.title}`;
+  $("#prev").disabled=CUR===0; $("#prev2").disabled=CUR===0;
+  $("#next").disabled=CUR===PAGES.length-1; $("#next2").disabled=CUR===PAGES.length-1;
+}
+
+/* ============ 事件 ============ */
+$("#eq").oninput=renderElems;
+$("#resetw").onclick=()=>{WEIGHTS={...WEIGHTS_DEFAULT};renderWeights();};
+
+$("#run").onclick=()=>{
+  const solKeys=[], vols=[];
+  for(let i=0;i<3;i++){
+    const k=$("#s"+i).value, v=parseFloat($("#v"+i).value)||0;
+    if(k&&v>0){solKeys.push(k);vols.push(v);}
+  }
+  if(!solKeys.length){alert("请至少选择一种溶剂并填写体积");return;}
+  if(!SEL_ELEMS.size){alert("请至少选择一种放射性或稀土元素");return;}
+  render(recommend(solKeys,vols,[...SEL_ELEMS],[...SEL_IMPS]));
+};
+
+$("#prev").onclick=()=>show(CUR-1);
+$("#prev2").onclick=()=>show(CUR-1);
+$("#next").onclick=()=>show(CUR+1);
+$("#next2").onclick=()=>show(CUR+1);
+$("#back").onclick=()=>{document.body.classList.remove("result");window.scrollTo({top:0,behavior:"smooth"});};
+document.addEventListener("keydown",e=>{
+  if(!document.body.classList.contains("result")) return;
+  if(e.key==="ArrowLeft") show(CUR-1);
+  if(e.key==="ArrowRight") show(CUR+1);
+});
+
+fillSelects(); renderElems(); renderImps(); renderWeights();
+</script>
+</body>
+</html>
